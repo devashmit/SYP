@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String
+  username     String   @unique
+  full_name    String?
+  avatar_url   String?
+  location     String?
+  is_anonymous Boolean? @default(false)
+  role         Role     @default(donor)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  posts          Post[]
+  comments       Comment[]
+  reactions      Reaction[]
+  notifications  Notification[]
+  sentMessages   Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  @@map("profiles")
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  user_id    String
+  type       String   // 'new_post', 'post_updated', 'interaction'
+  message    String
+  post_id    String?
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+  user       Profile  @relation(fields: [user_id], references: [id])
+  @@map("notifications")
+}
+
+model Post {
+  id           String     @id @default(uuid())
+  title        String
+  description  String
+  help_type    String?
+  post_type    String     @default("user_post")  // "user_post" | "community_need"
+  location     String?
+  images       String[]
+  is_anonymous Boolean?   @default(false)
+  status       PostStatus @default(pending)
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @updatedAt
+  user_id     String
+  user        Profile   @relation(fields: [user_id], references: [id])
+  category_id Int?
+  category    Category? @relation(fields: [category_id], references: [id])
+  comments    Comment[]
+  reactions   Reaction[]
+  @@map("posts")
+}
+
+model Category {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+  icon        String?
+  posts Post[]
+  @@map("categories")
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  content    String
+  created_at DateTime @default(now())
+  post_id String
+  post    Post    @relation(fields: [post_id], references: [id])
+  user_id String
+  user    Profile @relation(fields: [user_id], references: [id])
+  @@map("comments")
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  content    String
+  is_read    Boolean? @default(false)
+  created_at DateTime @default(now())
+  sender_id   String
+  sender      Profile @relation("SentMessages", fields: [sender_id], references: [id])
+  receiver_id String
+  receiver    Profile @relation("ReceivedMessages", fields: [receiver_id], references: [id])
+  @@map("messages")
+}
+
+model Reaction {
+  id         String       @id @default(uuid())
+  type       ReactionType
+  created_at DateTime     @default(now())
+  post_id    String
+  post       Post         @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  user_id    String
+  user       Profile      @relation(fields: [user_id], references: [id])
+  @@unique([post_id, user_id])
+  @@map("reactions")
+}
+
+enum ReactionType {
+  heart
+  care
+  sad
+}
+
+enum Role {
+  donor
+  recipient
+  admin
+}
+
+enum PostStatus {
+  pending
+  available
+  rejected
+  claimed
+  completed
+}
