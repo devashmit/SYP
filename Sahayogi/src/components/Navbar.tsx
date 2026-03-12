@@ -7,13 +7,9 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { NotificationsDropdown } from '@/components/NotificationsDropdown';
 import { useState, useEffect } from 'react';
-import sahayogiLogo from '@/assets/logo.jpg';
+import sahayogiLogo from '@/assets/logo.png';
 
-/* ─── Role-based nav config ───────────────────────────────────────────── */
-const guestLinks = [
-  { to: '/browse', label: 'Browse', icon: LayoutGrid },
-  { to: '/community-needs', label: 'Community Needs', icon: Heart },
-];
+const guestLinks: { to: string, label: string, icon: any }[] = [];
 
 const userLinks = [
   { to: '/feed', label: 'Feed', icon: Rss },

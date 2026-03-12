@@ -8,6 +8,7 @@ import { toast } from '@/hooks/use-toast';
 import { Send, ArrowLeft, MessageCircle, Inbox, Users, CheckCheck } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Navbar from '@/components/Navbar';
+import { useSocket } from '@/contexts/SocketContext';
 
 interface Message {
   id: string;
@@ -53,6 +54,7 @@ export default function Messages() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { socket } = useSocket();
 
   useEffect(() => {
     const userParam = searchParams.get('user');
@@ -71,6 +73,30 @@ export default function Messages() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    if (!socket || !user) return;
+
+    const handleReceiveMessage = (message: Message) => {
+      // Re-fetch conversations to update the latest message and unread count
+      fetchConversations();
+
+      // Append to open chat if it's the current selected user
+      if (selectedUserId && (message.sender_id === selectedUserId || message.receiver_id === selectedUserId)) {
+        setMessages((prev) => [...prev, message]);
+        // Immediately mark as read if it's open
+        if (message.sender_id === selectedUserId) {
+          markMessagesAsRead(selectedUserId);
+        }
+      }
+    };
+
+    socket.on('receive_message', handleReceiveMessage);
+
+    return () => {
+      socket.off('receive_message', handleReceiveMessage);
+    };
+  }, [socket, selectedUserId, user]);
 
   const fetchSelectedUserProfile = async (userId: string) => {
     const existing = conversations.find((c) => c.user_id === userId);
@@ -94,7 +120,11 @@ export default function Messages() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
-        setConversations(await res.json());
+        const data = await res.json();
+        console.log('Conversations Payload:', data);
+        setConversations(data);
+      } else {
+        console.log('Conversations Error:', await res.text());
       }
     } catch (error) {
       console.error('Error fetching conversations:', error);
@@ -170,16 +200,21 @@ export default function Messages() {
           Back to Home
         </Button>
 
-        <div className="grid md:grid-cols-3 gap-4 h-[calc(100vh-200px)]">
+        <div className="grid lg:grid-cols-3 gap-6 h-[calc(100vh-140px)] max-h-[800px]">
 
           {/* Conversations list */}
           <div className="rounded-2xl border border-border bg-white overflow-hidden flex flex-col shadow-sm">
-            <div className="px-5 py-4 border-b border-border flex items-center gap-2 bg-muted/5">
-              <MessageCircle className="w-5 h-5 text-primary" />
-              <h2 className="font-black text-foreground text-lg tracking-tighter uppercase">Signal Intelligence</h2>
+            <div className="px-5 py-4 border-b border-border flex items-center justify-between bg-muted/10">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-primary" />
+                <h2 className="font-bold text-foreground text-lg tracking-tight">Signal Intelligence</h2>
+              </div>
+              <span className="text-xs font-semibold text-muted-foreground bg-muted px-2 py-1 rounded-md">
+                {conversations.length} {conversations.length === 1 ? 'chat' : 'chats'}
+              </span>
             </div>
 
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 overflow-y-auto">
               {loading ? (
                 <div className="p-5 space-y-3">
                   {[1, 2, 3].map(i => (
@@ -221,8 +256,8 @@ export default function Messages() {
                           {letter}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-0.5">
-                            <span className={`font-semibold text-sm ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                          <div className="flex items-center justify-between mb-0.5 whitespace-nowrap overflow-hidden">
+                            <span className={`font-semibold text-sm truncate pr-2 ${isSelected ? 'text-primary' : 'text-foreground'}`}>
                               {conv.username}
                             </span>
                             {conv.unread_count > 0 && (
@@ -231,9 +266,11 @@ export default function Messages() {
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground truncate">{conv.last_message}</p>
-                          <p className="text-xs text-muted-foreground/60 mt-0.5">
-                            {formatDistanceToNow(new Date(conv.last_message_time), { addSuffix: true })}
+                          <p className="text-xs text-muted-foreground truncate max-w-[150px] sm:max-w-[200px]">
+                            {conv.last_message || 'No messages yet'}
+                          </p>
+                          <p className="text-xs text-muted-foreground/60 mt-0.5 shrink-0 whitespace-nowrap">
+                            {conv.last_message_time ? formatDistanceToNow(new Date(conv.last_message_time), { addSuffix: true }) : ''}
                           </p>
                         </div>
                       </div>
@@ -244,27 +281,26 @@ export default function Messages() {
             </ScrollArea>
           </div>
 
-          {/* Chat window */}
-          <div className="md:col-span-2 rounded-2xl border border-border bg-card overflow-hidden flex flex-col shadow-sm">
+          <div className="lg:col-span-2 rounded-3xl border border-border bg-card overflow-hidden flex flex-col shadow-sm relative">
             {selectedUserId ? (
               <>
                 <div
                   className="px-5 py-4 border-b border-border flex items-center gap-3"
                   style={{ background: 'linear-gradient(135deg, hsl(var(--muted) / 0.05), hsl(var(--muted) / 0.02))' }}
                 >
-                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${avatarGradient(displayLetter)} flex items-center justify-center text-white font-bold shadow-sm`}>
+                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${avatarGradient(displayLetter)} flex items-center justify-center text-white font-bold text-xl shadow-sm border-2 border-white ring-2 ring-primary/10`}>
                     {displayLetter}
                   </div>
                   <div>
-                    <h3 className="font-black text-foreground">{displayUsername}</h3>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse inline-block" />
+                    <h3 className="font-bold text-foreground text-lg tracking-tight">{displayUsername}</h3>
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5 mt-0.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
                       Active Connection
                     </span>
                   </div>
                 </div>
 
-                <ScrollArea className="flex-1 p-5">
+                <div className="flex-1 overflow-y-auto p-5 bg-muted/5">
                   <div className="space-y-3">
                     {messages.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -310,7 +346,7 @@ export default function Messages() {
                     )}
                     <div ref={messagesEndRef} />
                   </div>
-                </ScrollArea>
+                </div>
 
                 <div className="p-4 border-t border-border bg-white">
                   <div className="flex gap-2 items-center">
@@ -318,7 +354,7 @@ export default function Messages() {
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Type a message..."
-                      className="flex-1 rounded-2xl pr-4 pl-5 h-12 border-border focus:border-primary focus:ring-primary/20 bg-background"
+                      className="flex-1 rounded-full px-5 h-14 border-border focus:border-primary focus:ring-primary/20 bg-muted/10 shadow-inner"
                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                     />
                     <Button

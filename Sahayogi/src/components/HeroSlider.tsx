@@ -13,34 +13,10 @@ import heroSlide5 from '../assets/hero-slide-5.jpg';
 const slides = [
   {
     id: 1,
-    image: '/images/hero/Human-touch-and-social-work-1024x1024.jpg',
-    title: 'Kindness',
-    subtitle: 'Without Borders'
-  },
-  {
-    id: 2,
-    image: '/images/hero/boudhanath-stupa-in-kathmandu-nepal.webp',
-    title: 'Compassion',
-    subtitle: 'In Every Gift'
-  },
-  {
-    id: 3,
-    image: '/images/hero/VyzziCJ0Q5j5dIy7AvHMlrVQ6sg4FBVmPnfCl2YF.jpg',
-    title: 'Transparency',
-    subtitle: 'You Can Trust'
-  },
-  {
-    id: 4,
-    image: '/images/hero/100-things-to-do-in-nepal.avif',
+    image: heroSlide1,
     title: 'Community',
     subtitle: 'Across Nepal'
-  },
-  {
-    id: 5,
-    image: '/images/hero/5b5fc922a31031a3f2b5f2f6.jpeg',
-    title: 'Empowerment',
-    subtitle: 'Through Unity'
-  },
+  }
 ];
 
 const HeroSlider = () => {

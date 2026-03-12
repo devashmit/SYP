@@ -7,8 +7,8 @@ import { useEffect, useRef, useState } from 'react';
 import TestimonialSection from '@/components/TestimonialSection';
 import startRippleImg from '@/assets/start a ripple.png';
 
-import sahayogiLogoImg from '@/assets/logo.jpg';
-import moneyImg from '@/assets/Children-sponsorship-program-Picsart-AiImageEnhancer.webp';
+import sahayogiLogoImg from '@/assets/logo.png';
+import moneyImg from '@/assets/money.jpeg';
 import clothesImg from '@/assets/clothes.jpg';
 import foodImg from '@/assets/food.jpg';
 import furnitureImg from '@/assets/furniture.jpeg';
