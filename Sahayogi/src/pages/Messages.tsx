@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from '@/hooks/use-toast';
-import { Send, ArrowLeft, MessageCircle, Inbox, Users, CheckCheck } from 'lucide-react';
+import { Send, ArrowLeft, MessageCircle, Inbox, CheckCheck } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Navbar from '@/components/Navbar';
 import { useSocket } from '@/contexts/SocketContext';
@@ -22,6 +22,7 @@ interface Message {
 interface Conversation {
   user_id: string;
   username: string;
+  avatar_url?: string;
   last_message: string;
   last_message_time: string;
   unread_count: number;
@@ -29,7 +30,6 @@ interface Conversation {
 
 const API_URL = 'http://localhost:3000/api';
 
-// Gradient color per first letter
 function avatarGradient(letter: string) {
   const colors = [
     'from-primary to-primary-dark',
@@ -47,84 +47,30 @@ export default function Messages() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const { socket } = useSocket();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const selectedUserIdRef = useRef<string | null>(null); // Ref so socket closure sees latest
   const [selectedUsername, setSelectedUsername] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { socket } = useSocket();
 
+  // Keep ref up to date for the socket listener
   useEffect(() => {
-    const userParam = searchParams.get('user');
-    if (userParam) setSelectedUserId(userParam);
-    fetchConversations();
-  }, [user]);
-
-  useEffect(() => {
-    if (selectedUserId) {
-      fetchMessages(selectedUserId);
-      markMessagesAsRead(selectedUserId);
-      fetchSelectedUserProfile(selectedUserId);
-    }
+    selectedUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  useEffect(() => {
-    if (!socket || !user) return;
-
-    const handleReceiveMessage = (message: Message) => {
-      // Re-fetch conversations to update the latest message and unread count
-      fetchConversations();
-
-      // Append to open chat if it's the current selected user
-      if (selectedUserId && (message.sender_id === selectedUserId || message.receiver_id === selectedUserId)) {
-        setMessages((prev) => [...prev, message]);
-        // Immediately mark as read if it's open
-        if (message.sender_id === selectedUserId) {
-          markMessagesAsRead(selectedUserId);
-        }
-      }
-    };
-
-    socket.on('receive_message', handleReceiveMessage);
-
-    return () => {
-      socket.off('receive_message', handleReceiveMessage);
-    };
-  }, [socket, selectedUserId, user]);
-
-  const fetchSelectedUserProfile = async (userId: string) => {
-    const existing = conversations.find((c) => c.user_id === userId);
-    if (existing) { setSelectedUsername(existing.username); return; }
-    try {
-      const token = sessionStorage.getItem('sahayogi_token');
-      const res = await fetch(`${API_URL}/profiles/${userId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const profile = await res.json();
-        setSelectedUsername(profile.username || 'Unknown');
-      }
-    } catch { setSelectedUsername('Unknown'); }
-  };
 
   const fetchConversations = async () => {
     try {
       const token = sessionStorage.getItem('sahayogi_token');
-      const res = await fetch(`${API_URL}/conversations`, {
+      const res = await fetch(`${API_URL}/messages/conversations`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
-        const data = await res.json();
-        console.log('Conversations Payload:', data);
-        setConversations(data);
-      } else {
-        console.log('Conversations Error:', await res.text());
+        setConversations(await res.json());
       }
     } catch (error) {
       console.error('Error fetching conversations:', error);
@@ -156,10 +102,77 @@ export default function Messages() {
       });
       fetchConversations();
     } catch (error) {
-      console.error('Error marking messages as read:', error);
+      console.error('Error marking messages read:', error);
     }
   };
 
+  // 1. On mount, load conversations (and handle URL param)
+  useEffect(() => {
+    if (!user) return;
+    const userParam = searchParams.get('user');
+    if (userParam) setSelectedUserId(userParam);
+    fetchConversations();
+  }, [user]);
+
+  // 2. On selecting a user, fetch their messages
+  useEffect(() => {
+    if (selectedUserId) {
+      fetchMessages(selectedUserId);
+      markMessagesAsRead(selectedUserId);
+      
+      // Attempt to get name from conversations list first
+      const existing = conversations.find((c) => c.user_id === selectedUserId);
+      if (existing) {
+        setSelectedUsername(existing.username);
+      } else {
+        // Fallback fetch if they aren't in the list
+        fetch(`${API_URL}/users/profiles/${selectedUserId}`, {
+          headers: { 'Authorization': `Bearer ${sessionStorage.getItem('sahayogi_token')}` }
+        })
+        .then(r => r.ok ? r.json() : null)
+        .then(profile => {
+          if (profile) setSelectedUsername(profile.username);
+        });
+      }
+    }
+  }, [selectedUserId]);
+
+  // 3. Register socket listener exactly ONCE
+  useEffect(() => {
+    if (!socket || !user) return;
+
+    const handleReceiveMessage = (message: Message) => {
+      // 1. Update the sidebar instantly
+      fetchConversations();
+
+      // 2. Append to current open thread if it belongs here
+      const currentSelectedID = selectedUserIdRef.current;
+      if (
+        currentSelectedID && 
+        (message.sender_id === currentSelectedID || message.receiver_id === currentSelectedID)
+      ) {
+        setMessages(prev => [...prev, message]);
+        
+        // If they sent it to us and we have chat open, mark it read
+        if (message.sender_id === currentSelectedID) {
+          markMessagesAsRead(currentSelectedID);
+        }
+      }
+    };
+
+    socket.on('receive_message', handleReceiveMessage);
+
+    return () => {
+      socket.off('receive_message', handleReceiveMessage);
+    };
+  }, [socket, user]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // 4. Send message - DO NOT call fetchMessages after
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedUserId) return;
     try {
@@ -177,9 +190,7 @@ export default function Messages() {
       });
 
       if (res.ok) {
-        setNewMessage('');
-        fetchMessages(selectedUserId);
-        fetchConversations();
+        setNewMessage(''); // Let the socket event update the thread!
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -233,7 +244,7 @@ export default function Messages() {
                     <img
                       src="https://images.unsplash.com/photo-1544254254-8e434f0f0894?w=100&h=100&fit=crop&auto=format"
                       alt="No conversations"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   </div>
                   <p className="text-muted-foreground text-sm">No conversations yet</p>
@@ -308,7 +319,7 @@ export default function Messages() {
                           <img
                             src="https://images.unsplash.com/photo-1518712391031-6b80f83d09f7?w=100&h=100&fit=crop&auto=format"
                             alt="Start conversation"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                           />
                         </div>
                         <p className="text-muted-foreground">Start a conversation with <span className="font-semibold text-foreground">{displayUsername}</span></p>
@@ -328,7 +339,7 @@ export default function Messages() {
                                 : 'rounded-bl-sm bg-muted text-foreground'
                                 }`}
                             >
-                              <p className={`text-sm leading-relaxed ${isMine ? 'text-white' : 'text-foreground'}`}>
+                              <p className={`text-sm leading-relaxed whitespace-pre-wrap break-words ${isMine ? 'text-white' : 'text-foreground'}`}>
                                 {message.content}
                               </p>
                               <div className={`flex items-center gap-1 mt-1 ${isMine ? 'justify-end' : ''}`}>
@@ -373,7 +384,7 @@ export default function Messages() {
                   <img
                     src="https://images.unsplash.com/photo-1526404423292-15db8c2334e5?w=200&h=200&fit=crop&auto=format"
                     alt="Messages"
-                    className="w-full h-full object-cover opacity-80"
+                    className="w-full h-full object-contain opacity-80"
                   />
                 </div>
                 <div className="flex items-center gap-2 mb-2">

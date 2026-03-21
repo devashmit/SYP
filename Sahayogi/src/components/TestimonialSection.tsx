@@ -134,7 +134,7 @@ const TestimonialSection = () => {
                             opacity: 0.6,
                         }}
                     >
-                        <img src={ava.img} alt="" className="w-full h-full object-cover" />
+                        <img src={ava.img} alt="" className="w-full h-full object-contain" />
                     </div>
                 ))}
             </div>
@@ -151,7 +151,7 @@ const TestimonialSection = () => {
                                 className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border-2 border-white shadow-md"
                                 style={{ opacity: 0.85 }}
                             >
-                                <img src={img} alt="Community member" className="w-full h-full object-cover" />
+                                <img src={img} alt="Community member" className="w-full h-full object-contain" />
                             </div>
                         ))}
                     </div>
@@ -233,7 +233,7 @@ const TestimonialSection = () => {
                                     boxShadow: '0 8px 28px rgba(0,0,0,0.13)',
                                 }}
                             >
-                                <img src={t.photo} alt={t.name} className="w-full h-full object-cover" />
+                                <img src={t.photo} alt={t.name} className="w-full h-full object-contain" />
                             </div>
                         </div>
 

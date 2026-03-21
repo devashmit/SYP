@@ -7,7 +7,8 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { NotificationsDropdown } from '@/components/NotificationsDropdown';
 import { useState, useEffect } from 'react';
-import sahayogiLogo from '@/assets/logo.png';
+import sahayogiLogo from '@/assets/Logo.svg';
+import { useSocket } from '@/contexts/SocketContext';
 
 const guestLinks: { to: string, label: string, icon: any }[] = [];
 
@@ -29,8 +30,10 @@ const Navbar = () => {
   const { user, authStatus, isAdmin, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
+  const { socket } = useSocket();
 
   // Must call all hooks BEFORE any early return (React rule)
   useEffect(() => {
@@ -43,6 +46,31 @@ const Navbar = () => {
   if (location.pathname.startsWith('/auth')) return null;
 
   const isAuthenticated = authStatus === 'authenticated';
+
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+    
+    const fetchUnread = async () => {
+      try {
+        const token = sessionStorage.getItem('sahayogi_token');
+        const res = await fetch('http://localhost:3000/api/messages/conversations', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const convos = await res.json();
+          const total = convos.reduce((sum: number, c: any) => sum + c.unread_count, 0);
+          setUnreadMessageCount(total);
+        }
+      } catch (e) {}
+    };
+    
+    fetchUnread();
+    
+    if (socket) {
+      socket.on('receive_message', fetchUnread);
+      return () => { socket.off('receive_message', fetchUnread); };
+    }
+  }, [isAuthenticated, user, socket]);
 
   /* Pick the correct link set — NEVER mix user + admin */
   const links = isAuthenticated ? (isAdmin ? adminLinks : userLinks) : guestLinks;
@@ -82,13 +110,18 @@ const Navbar = () => {
             <Link
               key={to}
               to={to}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${active
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative ${active
                 ? 'bg-white text-foreground shadow-sm border border-border/40'
                 : 'text-muted-foreground hover:text-foreground hover:bg-white/60'
                 }`}
             >
               <Icon className={`w-4 h-4 ${active ? 'text-primary' : ''}`} />
               {label}
+              {to === '/messages' && unreadMessageCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-sm ring-2 ring-white animate-in zoom-in">
+                  {unreadMessageCount}
+                </span>
+              )}
             </Link>
           );
         })}
@@ -166,6 +199,11 @@ const Navbar = () => {
               >
                 <Icon className="w-4 h-4" />
                 {label}
+                {to === '/messages' && unreadMessageCount > 0 && (
+                  <span className="ml-auto flex h-5 px-2 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm">
+                    {unreadMessageCount} new
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -178,7 +216,7 @@ const Navbar = () => {
                   <img
                     src={sahayogiLogo}
                     alt="Logo"
-                    className="w-8 h-8 rounded-full object-cover"
+                    className="w-8 h-8 rounded-full object-contain"
                   />
                   <div>
                     <p className="text-sm font-semibold text-foreground leading-none">

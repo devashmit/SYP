@@ -75,6 +75,7 @@
 
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
     font-family: 'DM Sans', 'Inter', sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
@@ -102,6 +103,13 @@
   /* Legacy compatibility */
   .font-playfair {
     font-family: 'Instrument Serif', serif;
+  }
+
+  /* Global Image Fitting */
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
   }
 }
 

@@ -11,7 +11,8 @@ interface PostCardProps {
         location: string | null;
         created_at: string;
         images: string[];
-        help_type: string;
+        intent?: string;
+        help_type?: string;
         status?: string;
         categories: { name: string } | null;
         profiles: { username: string } | null;
@@ -20,7 +21,7 @@ interface PostCardProps {
 
 const PostCard = ({ post }: PostCardProps) => {
     const [imgLoaded, setImgLoaded] = useState(false);
-    const isGiving = post.help_type === 'giving' || post.help_type === 'offering';
+    const isGiving = post.intent === 'OFFER_HELP' || post.help_type === 'offering' || post.help_type === 'giving';
 
     // Simulate a progress % for giving posts (would come from API in real app)
     const progress = isGiving ? Math.floor(30 + Math.random() * 60) : null;
@@ -39,7 +40,7 @@ const PostCard = ({ post }: PostCardProps) => {
             {/* Clickable area — image + content */}
             <Link to={`/post/${post.id}`} className="flex flex-col sm:flex-row">
                 {/* IMAGE */}
-                <div className="w-full h-48 sm:w-36 sm:h-auto relative overflow-hidden shrink-0 bg-muted">
+                <div className="w-full sm:w-36 relative overflow-hidden shrink-0 bg-muted" style={{ aspectRatio: '4/3' }}>
                     {post.images && post.images.length > 0 ? (
                         <>
                             {/* Skeleton */}

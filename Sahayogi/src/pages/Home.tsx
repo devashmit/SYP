@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import TestimonialSection from '@/components/TestimonialSection';
 import startRippleImg from '@/assets/start a ripple.png';
 
-import sahayogiLogoImg from '@/assets/logo.png';
+import sahayogiLogoImg from '@/assets/Logo.svg';
 import moneyImg from '@/assets/money.jpeg';
 import clothesImg from '@/assets/clothes.jpg';
 import foodImg from '@/assets/food.jpg';

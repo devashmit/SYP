@@ -6,14 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, Image as ImageIcon, X } from 'lucide-react';
+import { Loader2, Image as ImageIcon, X, MapPin, Plus } from 'lucide-react';
 import { apiFetch } from '@/lib/api-client';
-import postImage from '@/assets/Post.png';
+import StoryHeader from '@/components/StoryHeader';
+import HelpTypeToggle from '@/components/HelpTypeToggle';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -26,6 +26,7 @@ const CreatePost = () => {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [descLength, setDescLength] = useState(0);
+  const [helpType, setHelpType] = useState<'offering' | 'seeking'>('offering');
   const DESC_MAX = 2000;
 
   useEffect(() => {
@@ -72,9 +73,8 @@ const CreatePost = () => {
     const description = formData.get('description') as string;
     const categoryId = formData.get('category') as string;
     const location = formData.get('location') as string;
-    const helpType = formData.get('helpType') as 'offering' | 'seeking';
 
-    if (!title || !description || !categoryId || !helpType) {
+    if (!title || !description || !categoryId) {
       toast.error('Please fill in all required fields');
       setLoading(false);
       return;
@@ -87,12 +87,12 @@ const CreatePost = () => {
         description,
         category_id: categoryId,
         location,
-        help_type: helpType,
+        intent: helpType === 'offering' ? 'OFFER_HELP' : 'ASK_HELP',
         is_anonymous: isAnonymous,
         images: imagePreviews
       };
 
-      const data = await apiFetch(`${API_URL}/posts`, {
+      await apiFetch(`${API_URL}/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -101,8 +101,10 @@ const CreatePost = () => {
         body: JSON.stringify(payload)
       });
 
-      toast.success('Posted successfully!');
-      navigate('/browse');
+      toast.success('Post submitted! It will appear on the feed after admin approval.', {
+        duration: 6000,
+      });
+      navigate('/profile');
     } catch (error: any) {
       toast.error(error.message, {
         duration: 5000,
@@ -113,78 +115,73 @@ const CreatePost = () => {
   };
 
   return (
-    <div className="min-h-screen relative w-full flex flex-col">
-      {/* Background with overlay */}
-      <div
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${postImage})` }}
-      />
-      <div className="absolute inset-0 z-[1] bg-black/50" />
+    <div className="min-h-screen bg-[#faf9f6] relative overflow-hidden py-16 sm:py-24 px-4 font-sans selection:bg-rose-100 selection:text-rose-900">
+      <Navbar />
 
-      {/* Content wrapper */}
-      <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar />
+      {/* Dynamic Background Ambiance */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-rose-100/30 blur-[120px] rounded-full animate-blob" />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-stone-100/30 blur-[120px] rounded-full animate-blob animation-delay-2000" />
+        <div className="absolute top-[30%] right-[10%] w-[30%] h-[30%] bg-rose-50/40 blur-[100px] rounded-full animate-blob animation-delay-4000" />
+      </div>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 flex-1 flex items-center justify-center">
-          <div className="w-full max-w-3xl">
-            <Card className="rounded-[2.5rem] border-white/10 shadow-2xl overflow-hidden bg-background/95 backdrop-blur-md dark:bg-neutral-900/90">
-              <CardHeader className="bg-muted/5 border-b border-border/50 pb-8">
-                <div
-                  className="w-full h-40 sm:h-48 lg:h-56 overflow-hidden rounded-2xl mb-6 bg-muted/20 bg-no-repeat bg-center bg-contain sm:bg-cover"
-                  style={{ backgroundImage: `url(${postImage})` }}
-                  role="img"
-                  aria-label="Create post banner"
-                />
-                <CardTitle className="text-3xl font-black text-foreground tracking-tighter uppercase mb-2">Share Your Story</CardTitle>
-                <CardDescription className="text-foreground/40 font-medium">
-                  Whether you're offering help or seeking support, your post can make a difference in Nepal.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Help Type */}
-                  <div className="space-y-3">
-                    <Label>I am</Label>
-                    <RadioGroup name="helpType" defaultValue="offering" className="grid grid-cols-2 gap-4">
-                      <div className="flex items-start space-x-3 border border-border rounded-xl p-4 cursor-pointer hover:bg-muted transition-colors group">
-                        <RadioGroupItem value="offering" id="offering" className="text-primary border-primary/20 mt-1" />
-                        <Label htmlFor="offering" className="cursor-pointer flex-1 flex flex-col gap-1.5 leading-tight">
-                          <div className="font-bold text-foreground leading-tight">Offering Help</div>
-                          <div className="text-[10px] text-foreground/40 uppercase tracking-widest leading-snug whitespace-normal">I have something to give</div>
-                        </Label>
-                      </div>
-                      <div className="flex items-start space-x-3 border border-border rounded-xl p-4 cursor-pointer hover:bg-muted transition-colors group">
-                        <RadioGroupItem value="seeking" id="seeking" className="text-primary border-primary/20 mt-1" />
-                        <Label htmlFor="seeking" className="cursor-pointer flex-1 flex flex-col gap-1.5 leading-tight">
-                          <div className="font-bold text-foreground leading-tight">Seeking Help</div>
-                          <div className="text-[10px] text-foreground/40 uppercase tracking-widest leading-snug whitespace-normal">I need support</div>
-                        </Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
+      <div className="max-w-3xl mx-auto relative z-10 animate-fade-in-up mt-12">
+        {/* Main Card with Premium Depth */}
+        <div className="bg-white rounded-[3rem] border border-stone-100 shadow-[0_32px_80px_-16px_rgba(45,35,30,0.06)] overflow-hidden transition-all duration-700 hover:shadow-[0_48px_96px_-24px_rgba(45,35,30,0.08)]">
+          <div className="relative">
+            {/* Subtle Paper Texture Overlay */}
+            <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
+            
+            <StoryHeader />
+            
+            <div className="px-8 sm:px-12 pt-14 pb-10 text-center relative z-10">
+              <h2 className="text-4xl sm:text-5xl font-extrabold text-stone-900 tracking-tight mb-4 animate-slide-up">
+                  Share Your Story
+              </h2>
+              <p className="text-stone-500 text-base sm:text-lg font-medium max-w-lg mx-auto leading-relaxed animate-slide-up animation-delay-200">
+                  Tell us about your journey. Your experience can inspire others and help build a stronger community.
+              </p>
+            </div>
 
-                  {/* Title */}
-                  <div className="space-y-2">
-                    <Label htmlFor="title" className="font-black text-[10px] uppercase tracking-[0.2em] text-foreground/60">Title *</Label>
-                    <Input
-                      id="title"
-                      name="title"
-                      placeholder="Brief description of what you're offering or need"
-                      className="rounded-xl border-border focus:ring-primary/20 bg-background"
-                      required
-                    />
-                  </div>
+            <div className="px-8 sm:px-16 pb-16 space-y-12">
+              {/* Type Selection Section */}
+              <div className="animate-slide-up animation-delay-400">
+                <label className="block text-[11px] font-bold text-stone-400 uppercase tracking-[0.2em] mb-6 text-center">
+                  What are you looking for?
+                </label>
+                <HelpTypeToggle value={helpType} onChange={setHelpType} />
+              </div>
 
-                  {/* Category */}
-                  <div className="space-y-2">
-                    <Label htmlFor="category" className="font-black text-[10px] uppercase tracking-[0.2em] text-foreground/60">Category *</Label>
+              {/* Form Inputs Section */}
+              <form onSubmit={handleSubmit} className="space-y-8 animate-slide-up animation-delay-600">
+                {/* Title Input */}
+                <div className="space-y-2.5 group">
+                  <label htmlFor="title" className="block text-[11px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-1 group-focus-within:text-rose-600 transition-colors duration-300">
+                    Give your story a title
+                  </label>
+                  <input
+                    id="title"
+                    name="title"
+                    type="text"
+                    placeholder="E.g., Seeking volunteer help for local school..."
+                    className="w-full h-14 px-7 bg-stone-50/50 border border-stone-100 rounded-[1.2rem] focus:outline-none focus:ring-4 focus:ring-rose-50/50 focus:border-rose-200 focus:bg-white text-stone-800 placeholder:text-stone-300 transition-all duration-500 font-medium sm:text-base text-sm"
+                    required
+                  />
+                </div>
+
+                {/* Category & Location Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2.5 group">
+                    <label htmlFor="category" className="block text-[11px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-1 group-focus-within:text-rose-600 transition-colors duration-300">
+                      Category
+                    </label>
                     <Select name="category" required>
-                      <SelectTrigger className="rounded-xl border-border focus:ring-primary/20 bg-background">
-                        <SelectValue placeholder="Select a category" />
+                      <SelectTrigger className="h-14 rounded-[1.2rem] border-stone-100 bg-stone-50/50 px-7 focus:ring-4 focus:ring-rose-50/50 focus:border-rose-200 focus:bg-white transition-all duration-500">
+                        <SelectValue placeholder="Select Category" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl border-border bg-white">
+                      <SelectContent className="rounded-2xl border-stone-100 bg-white/95 backdrop-blur-md">
                         {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id.toString()}>
+                          <SelectItem key={cat.id} value={cat.id.toString()} className="rounded-xl focus:bg-rose-50 focus:text-rose-900 py-3 px-4">
                             {cat.name}
                           </SelectItem>
                         ))}
@@ -192,127 +189,124 @@ const CreatePost = () => {
                     </Select>
                   </div>
 
-                  {/* Description */}
-                  <div className="space-y-2">
-                    <Label htmlFor="description" className="font-black text-[10px] uppercase tracking-[0.2em] text-foreground/60">Description *</Label>
-                    <Textarea
+                  <div className="space-y-2.5 group">
+                    <label htmlFor="location" className="block text-[11px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-1 group-focus-within:text-rose-600 transition-colors duration-300">
+                      Location
+                    </label>
+                    <div className="relative">
+                        <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-300 pointer-events-none group-focus-within:text-rose-300 transition-colors" />
+                        <input
+                            id="location"
+                            name="location"
+                            type="text"
+                            placeholder="e.g., Kathmandu"
+                            className="w-full h-14 pl-12 pr-7 bg-stone-50/50 border border-stone-100 rounded-[1.2rem] focus:outline-none focus:ring-4 focus:ring-rose-50/50 focus:border-rose-200 focus:bg-white text-stone-800 placeholder:text-stone-300 transition-all duration-500 font-medium sm:text-base text-sm"
+                        />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description Textarea */}
+                <div className="space-y-2.5 group">
+                  <label htmlFor="description" className="block text-[11px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-1 group-focus-within:text-rose-600 transition-colors duration-300">
+                    Your detailed story
+                  </label>
+                  <div className="relative">
+                    <textarea
                       id="description"
                       name="description"
-                      placeholder="Provide details about your situation or what you're offering"
-                      className="rounded-xl border-border focus:ring-primary/20 bg-background"
+                      placeholder="Share the details, your goals, and how the community can get involved..."
                       rows={6}
+                      className="w-full px-7 py-6 bg-stone-50/50 border border-stone-100 rounded-[1.5rem] focus:outline-none focus:ring-4 focus:ring-rose-50/50 focus:border-rose-200 focus:bg-white text-stone-800 placeholder:text-stone-300 transition-all duration-500 leading-relaxed font-medium resize-none sm:text-base text-sm"
                       required
                       maxLength={DESC_MAX}
                       onChange={(e) => setDescLength(e.target.value.length)}
                     />
-                    <div className="flex justify-end">
-                      <span className={`text-[11px] font-medium ${descLength > DESC_MAX * 0.9 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                        {descLength}/{DESC_MAX}
-                      </span>
-                    </div>
                   </div>
-
-                  {/* Image Upload */}
-                  <div className="space-y-2">
-                    <Label htmlFor="images" className="font-black text-[10px] uppercase tracking-[0.2em] text-foreground/60">Images (Optional)</Label>
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="rounded-xl border-border hover:bg-primary/5 hover:text-primary transition-all"
-                          onClick={() => document.getElementById('image-input')?.click()}
-                          disabled={selectedImages.length >= 5}
-                        >
-                          <ImageIcon className="w-4 h-4 mr-2" />
-                          Add Images
-                        </Button>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">
-                          {selectedImages.length}/5 images
-                        </span>
-                      </div>
-                      <input
-                        id="image-input"
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleImageChange}
-                        className="hidden"
-                      />
-
-                      {imagePreviews.length > 0 && (
-                        <div className="grid grid-cols-3 gap-4">
-                          {imagePreviews.map((preview, index) => (
-                            <div key={index} className="relative group">
-                              <img
-                                src={preview}
-                                alt={`Preview ${index + 1}`}
-                                className="w-full h-32 object-cover rounded-lg border"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => removeImage(index)}
-                                className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      <p className="text-xs text-muted-foreground">
-                        Upload up to 5 images (max 5MB each). JPG, PNG, or WebP format.
-                      </p>
-                    </div>
+                  <div className="flex justify-end pr-2">
+                    <span className={`text-[10px] font-bold tracking-widest ${descLength > DESC_MAX * 0.9 ? 'text-rose-600' : 'text-stone-300 uppercase'}`}>
+                        {descLength} / {DESC_MAX}
+                    </span>
                   </div>
+                </div>
 
-                  {/* Location */}
-                  <div className="space-y-2">
-                    <Label htmlFor="location" className="font-black text-[10px] uppercase tracking-[0.2em] text-foreground/60">General Location (Optional)</Label>
-                    <Input
-                      id="location"
-                      name="location"
-                      className="rounded-xl border-border focus:ring-primary/20 bg-background"
-                      placeholder="e.g., Kathmandu, Pokhara (keep it general for privacy)"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Only share your general area. Exact addresses will be shared privately later.
-                    </p>
-                  </div>
-
-                  {/* Anonymous */}
-                  <div className="flex items-center justify-between p-4 bg-muted/5 rounded-xl border border-border">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="anonymous" className="font-black text-[10px] uppercase tracking-[0.2em] text-foreground/60">Post Anonymously</Label>
-                      <p className="text-xs text-foreground/40">
-                        Hide your username from public view
-                      </p>
+                {/* Anonymous Toggle */}
+                <div className="flex items-center justify-between p-6 bg-stone-50/40 rounded-[1.5rem] border border-stone-100/60 transition-all duration-500 hover:bg-stone-50/60 group">
+                    <div className="space-y-1">
+                        <h4 className="text-stone-800 text-sm font-bold tracking-tight">Post Anonymously</h4>
+                        <p className="text-stone-400 text-[11px] font-medium">Protect your identity while sharing support</p>
                     </div>
                     <Switch
-                      id="anonymous"
-                      checked={isAnonymous}
-                      onCheckedChange={setIsAnonymous}
-                      className="data-[state=checked]:bg-primary"
+                        checked={isAnonymous}
+                        onCheckedChange={setIsAnonymous}
+                        className="data-[state=checked]:bg-stone-900"
                     />
-                  </div>
+                </div>
 
-                  {/* Submit */}
-                  <Button type="submit" className="w-full h-14 rounded-xl bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20 transition-all active:scale-95" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Creating Post...
-                      </>
-                    ) : (
-                      'Create Post'
-                    )}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+                {/* Submit Button */}
+                <div className="pt-6">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="group relative w-full overflow-hidden rounded-[1.3rem] p-px transition-all duration-500 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 disabled:pointer-events-none shadow-xl shadow-stone-200/50"
+                  >
+                    {/* Animated Shimmer Background for Button */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-stone-800 via-stone-400 to-stone-800 animate-shimmer" />
+                    
+                    <div className="relative flex items-center justify-center gap-3 px-8 py-5 bg-stone-900 rounded-[1.25rem] transition-all duration-500 group-hover:bg-transparent text-white font-bold tracking-wider uppercase text-sm">
+                      {loading ? (
+                        <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 border-2 border-stone-400 border-t-white rounded-full animate-spin" />
+                            <span className="text-xs">Publishing...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <span>Post Story</span>
+                          <div className="translate-x-0 group-hover:translate-x-1.5 transition-transform duration-500">
+                             <Plus className="w-4 h-4 text-stone-400 group-hover:text-white transition-colors" />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </button>
+                  <p className="mt-8 text-center text-[10px] sm:text-xs text-stone-400 font-medium">
+                      By posting, you agree to our <span className="text-stone-500 hover:text-rose-500 transition-colors cursor-pointer decoration-stone-200 decoration-1 underline underline-offset-4">Community Guidelines</span>
+                  </p>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes blob {
+          0%, 100% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slide-up {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        .animate-blob { animation: blob 15s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); }
+        .animate-fade-in-up { animation: fade-in-up 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-slide-up { opacity: 0; animation: slide-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-shimmer { background-size: 200% auto; animation: shimmer 3s linear infinite; }
+        .animation-delay-200 { animation-delay: 0.1s; }
+        .animation-delay-400 { animation-delay: 0.2s; }
+        .animation-delay-600 { animation-delay: 0.3s; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+      `}} />
     </div>
   );
 };

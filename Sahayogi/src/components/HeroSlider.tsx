@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, CheckCircle2, Heart, TrendingUp, FileText, Package, ShieldCheck } from 'lucide-react';
 
 // Import images from assets
-import heroDefault from '../assets/hero-image.jpg';
-import heroSlide1 from '../assets/hero-slide-1.jpg';
+import Home from '../assets/Home.png';
 import heroSlide2 from '../assets/hero-slide-2.jpg';
 import heroSlide3 from '../assets/hero-slide-3.jpg';
 import heroSlide4 from '../assets/hero-slide-4.jpg';
@@ -13,7 +12,7 @@ import heroSlide5 from '../assets/hero-slide-5.jpg';
 const slides = [
   {
     id: 1,
-    image: heroSlide1,
+    image: Home,
     title: 'Community',
     subtitle: 'Across Nepal'
   }

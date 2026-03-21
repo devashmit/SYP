@@ -17,14 +17,14 @@ interface AuthContextType {
   authStatus: AuthStatus;
   /** Derived — never stored separately */
   isAdmin: boolean;
-  signUp: (email: string, password: string, username: string, role: 'donor' | 'recipient') => Promise<{ error: any }>;
+  signUp: (email: string, password: string, name: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = 'http://localhost:3000/api';
+import { API_URL } from '@/config';
 
 const fetchMe = async (token: string): Promise<User | null> => {
   try {
@@ -73,14 +73,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (
     email: string,
     password: string,
-    username: string,
-    role: 'donor' | 'recipient',
+    name: string,
   ): Promise<{ error: any }> => {
     try {
       const res = await fetch(`${API_URL}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, username, role }),
+        body: JSON.stringify({ email, password, name }),
       });
       const data = await res.json();
       if (!res.ok) return { error: { message: data.error } };

@@ -1,0 +1,41 @@
+<svg width="100%" viewBox="0 0 680 380" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="clip1">
+      <rect width="680" height="380"/>
+    </clipPath>
+  </defs>
+
+  <!-- Icon group centered at 340, top area -->
+  <g transform="translate(340, 155)" style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
+
+    <!-- Outer cloud/infinity left lobe -->
+    <path d="&#10;      M -78 -10&#10;      C -78 -52, -42 -72, -10 -58&#10;      C 0 -62, 10 -62, 20 -58&#10;      C 20 -58, 0 -30, 0 0&#10;      C 0 -30, -20 -58, -30 -58&#10;      C -30 -58, -78 -52, -78 -10&#10;    " fill="none" stroke="#8B2A1A" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" style="fill:none;stroke:rgb(139, 42, 26);color:rgb(255, 255, 255);stroke-width:11px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+    <!-- Outer cloud/infinity right lobe -->
+    <path d="&#10;      M 78 -10&#10;      C 78 -52, 42 -72, 10 -58&#10;      C 0 -62, -10 -62, -20 -58&#10;      C -20 -58, 0 -30, 0 0&#10;      C 0 -30, 20 -58, 30 -58&#10;      C 30 -58, 78 -52, 78 -10&#10;    " fill="none" stroke="#8B2A1A" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" style="fill:none;stroke:rgb(139, 42, 26);color:rgb(255, 255, 255);stroke-width:11px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+    <!-- Bottom swoosh left -->
+    <path d="&#10;      M -78 -10&#10;      C -78 30, -50 58, -20 62&#10;      C -10 64, 0 60, 0 50&#10;    " fill="none" stroke="#8B2A1A" stroke-width="11" stroke-linecap="round" style="fill:none;stroke:rgb(139, 42, 26);color:rgb(255, 255, 255);stroke-width:11px;stroke-linecap:round;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+    <!-- Bottom swoosh right -->
+    <path d="&#10;      M 78 -10&#10;      C 78 30, 50 58, 20 62&#10;      C 10 64, 0 60, 0 50&#10;    " fill="none" stroke="#8B2A1A" stroke-width="11" stroke-linecap="round" style="fill:none;stroke:rgb(139, 42, 26);color:rgb(255, 255, 255);stroke-width:11px;stroke-linecap:round;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+    <!-- Inner heart -->
+    <!-- Left half of heart -->
+    <path d="&#10;      M 0 38&#10;      C -4 32, -36 10, -36 -14&#10;      C -36 -32, -22 -44, -8 -38&#10;      C -4 -36, 0 -30, 0 -24&#10;    " fill="none" stroke="#B03A2E" stroke-width="9" stroke-linecap="round" style="fill:none;stroke:rgb(176, 58, 46);color:rgb(255, 255, 255);stroke-width:9px;stroke-linecap:round;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+    <!-- Right half of heart -->
+    <path d="&#10;      M 0 38&#10;      C 4 32, 36 10, 36 -14&#10;      C 36 -32, 22 -44, 8 -38&#10;      C 4 -36, 0 -30, 0 -24&#10;    " fill="none" stroke="#B03A2E" stroke-width="9" stroke-linecap="round" style="fill:none;stroke:rgb(176, 58, 46);color:rgb(255, 255, 255);stroke-width:9px;stroke-linecap:round;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+    <!-- Center connection line (the infinity cross) -->
+    <path d="M -18 -10 C -8 4, 8 4, 18 -10" fill="none" stroke="#8B2A1A" stroke-width="9" stroke-linecap="round" style="fill:none;stroke:rgb(139, 42, 26);color:rgb(255, 255, 255);stroke-width:9px;stroke-linecap:round;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  </g>
+
+  <!-- SAHAYOGI text -->
+  <text x="340" y="258" font-family="Georgia, 'Times New Roman', serif" font-size="52" font-weight="700" fill="#2C1A0E" text-anchor="middle" letter-spacing="3" style="fill:rgb(44, 26, 14);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Georgia, &quot;Times New Roman&quot;, serif;font-size:52px;font-weight:700;text-anchor:middle;dominant-baseline:auto">Sahayogi</text>
+
+  <!-- Subtitle -->
+  <text x="340" y="296" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="#7A5C4A" text-anchor="middle" letter-spacing="5" style="fill:rgb(122, 92, 74);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Arial, Helvetica, sans-serif;font-size:13px;font-weight:400;text-anchor:middle;dominant-baseline:auto">NEPAL COMMUNITY SUPPORT</text>
+
+</svg>

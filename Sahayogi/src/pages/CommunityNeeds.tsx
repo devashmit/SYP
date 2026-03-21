@@ -162,7 +162,7 @@ const CommunityNeeds = () => {
                     <img
                         src={childrenImg}
                         alt=""
-                        className="w-full h-full object-cover object-center opacity-30 mix-blend-multiply animate-[slow-zoom_35s_infinite_alternate]"
+                        className="w-full h-full object-contain object-center opacity-30 mix-blend-multiply animate-[slow-zoom_35s_infinite_alternate]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-[#fcfcfd]" />
                 </div>

@@ -21,6 +21,7 @@ import {
 import { Link } from 'react-router-dom';
 import PostCard from '@/components/PostCard';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSocket } from '@/contexts/SocketContext';
 
 interface Post {
   id: string;
@@ -40,6 +41,7 @@ const API_URL = 'http://localhost:3000/api';
 
 const Browse = () => {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -51,6 +53,31 @@ const Browse = () => {
     fetchPosts();
     return () => { mountedRef.current = false; };
   }, [selectedCategory]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handlePostCreated = (newPost: any) => {
+      if (newPost.post_type !== 'user_post' || newPost.status !== 'available') return;
+      if (selectedCategory !== 'all' && newPost.categories?.name !== selectedCategory) return;
+      
+      setPosts(prev => {
+        if (prev.some(p => p.id === newPost.id)) return prev;
+        return [newPost, ...prev];
+      });
+    };
+
+    const handlePostDeleted = (deletedId: string) => {
+      setPosts(prev => prev.filter(p => p.id !== deletedId));
+    };
+
+    socket.on('post_created', handlePostCreated);
+    socket.on('post_deleted', handlePostDeleted);
+    
+    return () => {
+      socket.off('post_created', handlePostCreated);
+      socket.off('post_deleted', handlePostDeleted);
+    };
+  }, [socket, selectedCategory]);
 
   const fetchCategories = async () => {
     try {
@@ -67,7 +94,7 @@ const Browse = () => {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/posts?category=${selectedCategory}`);
+      const res = await fetch(`${API_URL}/posts?type=user_post&category=${selectedCategory}`);
       if (res.ok) {
         const data = await res.json();
         if (mountedRef.current) setPosts(data || []);

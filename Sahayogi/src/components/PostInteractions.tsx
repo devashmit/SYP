@@ -383,7 +383,7 @@ export default function PostInteractions({ postId }: { postId: string }) {
                                         >
                                             <div className={`pi-share-avatar bg-gradient-to-br ${avatarGradient(u.username[0]?.toUpperCase() || 'A')}`}>
                                                 {u.avatar_url
-                                                    ? <img src={u.avatar_url} alt={u.username} className="w-full h-full object-cover rounded-full" />
+                                                    ? <img src={u.avatar_url} alt={u.username} className="w-full h-full object-contain rounded-full" />
                                                     : u.username[0]?.toUpperCase()
                                                 }
                                             </div>

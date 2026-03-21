@@ -12,15 +12,16 @@ const FeedHero = ({ username }: FeedHeroProps) => {
             <div className="absolute inset-0 bg-primary/5" />
 
             {/* Cultural Image - Responsive Handling */}
-            <div className="absolute right-0 sm:right-[5%] lg:right-[2%] xl:right-[5%] top-[10%] sm:top-1/2 sm:-translate-y-1/2 w-48 sm:w-[60%] lg:w-[500px] xl:w-[550px] opacity-20 pointer-events-none animate-fade-in select-none" style={{ transition: "all 700ms" }}>
-                <div className="relative aspect-square sm:aspect-video lg:aspect-auto">
+            <div className="absolute inset-y-0 right-0 w-full sm:w-[60%] lg:w-[500px] xl:w-[650px] opacity-[0.3] pointer-events-none animate-fade-in select-none" style={{ transition: "all 700ms" }}>
+                <div className="h-full w-full">
                     <img
                         src={geminiImage}
                         alt="Cultural Heritage"
-                        className="w-full h-full object-contain lg:object-cover rounded-3xl"
+                        className="w-full h-full object-cover lg:object-cover sm:object-cover rounded-none sm:rounded-l-[3rem]"
                         style={{
-                            maskImage: 'linear-gradient(to left, black 60%, transparent 100%)',
-                            WebkitMaskImage: 'linear-gradient(to left, black 60%, transparent 100%)'
+                            maskImage: 'linear-gradient(to left, black 50%, transparent 100%)',
+                            WebkitMaskImage: 'linear-gradient(to left, black 50%, transparent 100%)',
+                            objectPosition: 'center 38%'
                         }}
                     />
                 </div>
