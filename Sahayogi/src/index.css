@@ -117,7 +117,7 @@
    TYPOGRAPHY SCALE (reduced from massive)
    ================================================ */
 
-/* Section headings — were text-8xl, now more elegant */
+/* Section headings - were text-8xl, now more elegant */
 .display-xl {
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 700;
@@ -132,7 +132,7 @@
   line-height: 1.15;
 }
 
-/* Labels — tighter tracking, smaller */
+/* Labels - tighter tracking, smaller */
 .label-xs {
   font-size: 0.65rem;
   font-weight: 600;
@@ -610,7 +610,7 @@
    GRAIN / NOISE TEXTURE (soft background structure)
    ================================================ */
 
-/* Subtle grain overlay — apply to any section for texture */
+/* Subtle grain overlay - apply to any section for texture */
 .grain-overlay {
   position: relative;
 }
@@ -627,7 +627,7 @@
   background-repeat: repeat;
 }
 
-/* Top vignette — anchors content */
+/* Top vignette - anchors content */
 .vignette-top::after {
   content: '';
   position: absolute;
@@ -1313,7 +1313,7 @@ a:active,
 }
 
 /* ================================================
-   FOCUS STATES (Task 9 — Accessibility)
+   FOCUS STATES (Task 9 - Accessibility)
    ================================================ */
 
 *:focus-visible {

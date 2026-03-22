@@ -15,7 +15,7 @@ export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 interface AuthContextType {
   user: User | null;
   authStatus: AuthStatus;
-  /** Derived — never stored separately */
+  /** Derived - never stored separately */
   isAdmin: boolean;
   signUp: (email: string, password: string, name: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(me);
         setAuthStatus('authenticated');
       } else {
-        // Token invalid / expired — remove it
+        // Token invalid / expired - remove it
         sessionStorage.removeItem('sahayogi_token');
         setAuthStatus('unauthenticated');
       }
@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       sessionStorage.setItem('sahayogi_token', data.token);
 
-      // Always validate via /auth/me — never trust the signup payload alone
+      // Always validate via /auth/me - never trust the signup payload alone
       const me = await fetchMe(data.token);
       if (me) {
         setUser(me);

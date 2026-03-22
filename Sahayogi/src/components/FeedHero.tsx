@@ -1,5 +1,5 @@
 import { Rss } from 'lucide-react';
-import geminiImage from '@/assets/Gemini_Generated_Image_fo3xrjfo3xrjfo3x.png';
+import geminiImage from '@/assets/Pashupati.png';
 
 interface FeedHeroProps {
     username?: string;

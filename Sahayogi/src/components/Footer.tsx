@@ -103,7 +103,7 @@ const Footer = () => {
                                 margin: 0,
                             }}
                         >
-                            Giving with heart. Helping communities across Nepal.
+                            मनदेखि सहयोग। नेपालभरिका समुदायहरूलाई मद्दत।
                         </p>
                     </div>
 

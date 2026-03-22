@@ -64,7 +64,7 @@ const PageFallback = () => (
   </div>
 );
 
-/* ─── Smart "/" — redirects based on auth role ────────────────────────── */
+/* ─── Smart "/" - redirects based on auth role ────────────────────────── */
 const SmartHome = () => {
   const { authStatus, isAdmin } = useAuth();
   if (authStatus === "loading") return null;

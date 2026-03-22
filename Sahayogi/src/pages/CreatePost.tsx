@@ -38,7 +38,7 @@ const CreatePost = () => {
       const data = await apiFetch(`${API_URL}/categories`);
       setCategories(data);
     } catch {
-      // silently fail — categories will just be empty
+      // silently fail - categories will just be empty
     }
   };
 
@@ -135,11 +135,11 @@ const CreatePost = () => {
             <StoryHeader />
             
             <div className="px-8 sm:px-12 pt-14 pb-10 text-center relative z-10">
-              <h2 className="text-4xl sm:text-5xl font-extrabold text-stone-900 tracking-tight mb-4 animate-slide-up">
-                  Share Your Story
+              <h2 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight mb-4 animate-slide-up font-serif italic">
+                  Where every story finds a home. जहाँ प्रत्येक कथाले स्थान पाउँछ।
               </h2>
-              <p className="text-stone-500 text-base sm:text-lg font-medium max-w-lg mx-auto leading-relaxed animate-slide-up animation-delay-200">
-                  Tell us about your journey. Your experience can inspire others and help build a stronger community.
+              <p className="text-stone-500 text-base sm:text-lg font-medium max-w-lg mx-auto leading-relaxed animate-slide-up animation-delay-200 italic">
+                  In the tapestry of our community, your voice is the golden thread. Share your journey, offer a hand, or ask for a light.
               </p>
             </div>
 
@@ -228,6 +228,47 @@ const CreatePost = () => {
                         {descLength} / {DESC_MAX}
                     </span>
                   </div>
+                </div>
+
+                {/* Image Upload Section */}
+                <div className="space-y-4 group animate-slide-up animation-delay-700">
+                  <label className="block text-[11px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-1 group-focus-within:text-rose-600 transition-colors duration-300">
+                    Add Images (Max 5)
+                  </label>
+                  
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                    {/* Preview Cards */}
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="relative aspect-square rounded-2xl overflow-hidden border border-stone-100 group/img shadow-sm hover:shadow-md transition-all duration-300">
+                        <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur-sm rounded-xl text-stone-600 hover:text-rose-600 shadow-sm opacity-0 group-hover/img:opacity-100 transition-all duration-200"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                    
+                    {/* Upload Button */}
+                    {selectedImages.length < 5 && (
+                      <label className="aspect-square rounded-2xl border-2 border-dashed border-stone-100 hover:border-rose-200 hover:bg-rose-50/30 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-300 group/upload">
+                        <div className="w-10 h-10 rounded-xl bg-stone-50 flex items-center justify-center group-hover/upload:bg-rose-100 group-hover/upload:text-rose-600 text-stone-400 transition-colors">
+                          <Plus className="w-5 h-5" />
+                        </div>
+                        <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Add</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-stone-400 font-medium ml-1 italic">* Only images up to 5MB are supported</p>
                 </div>
 
                 {/* Anonymous Toggle */}

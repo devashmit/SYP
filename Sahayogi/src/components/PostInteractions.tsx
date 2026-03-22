@@ -166,7 +166,7 @@ export default function PostInteractions({ postId }: { postId: string }) {
                 const data = await res.json();
                 setReactionData(data);
             }
-        } catch { /* silent — optimistic stays */ }
+        } catch { /* silent - optimistic stays */ }
     };
 
     const handleReactionHover = () => {
@@ -442,7 +442,7 @@ export default function PostInteractions({ postId }: { postId: string }) {
                             <div className="pi-comment-skeleton" />
                         </div>
                     ) : comments.length === 0 ? (
-                        <p className="pi-no-comments">No comments yet — be the first!</p>
+                        <p className="pi-no-comments">No comments yet - be the first!</p>
                     ) : (
                         <div className="pi-comment-list">
                             {comments.slice(0, 3).map(c => {

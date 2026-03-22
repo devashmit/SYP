@@ -276,7 +276,7 @@ const Home = () => {
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/6 text-primary text-[10px] font-semibold uppercase tracking-widest mb-3 border border-primary/10">
               How it works
             </span>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight mb-2">Simple. Human. Direct.</h2>
+            <h2 className="text-2xl font-bold text-foreground tracking-tight mb-2">सरल । मानवीय । प्रत्यक्ष ।</h2>
             <p className="text-sm text-muted-foreground">Three steps to connect givers with those who need.</p>
           </div>
 
@@ -372,11 +372,11 @@ const Home = () => {
               </span>
 
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 tracking-tight leading-[1.1]">
-                Start a ripple. Change a life.
+                Light a path. कसैको जीवनको ज्योति बन्नुहोस्।
               </h2>
-
+  
               <p className="text-white/70 text-sm max-w-lg mx-auto mb-8 leading-relaxed font-medium">
-                Join people across Nepal helping each other with verified requests, transparent giving, and real stories — one post at a time.
+                Join people across Nepal in helping each other with verified requests, transparent contributions, and real stories.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-8">

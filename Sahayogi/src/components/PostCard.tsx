@@ -37,7 +37,7 @@ const PostCard = ({ post }: PostCardProps) => {
 
     return (
         <div className="group spotlight-card overflow-hidden w-full">
-            {/* Clickable area — image + content */}
+            {/* Clickable area - image + content */}
             <Link to={`/post/${post.id}`} className="flex flex-col sm:flex-row">
                 {/* IMAGE */}
                 <div className="w-full sm:w-36 relative overflow-hidden shrink-0 bg-muted" style={{ aspectRatio: '4/3' }}>
@@ -143,7 +143,7 @@ const PostCard = ({ post }: PostCardProps) => {
                 </div>
             </Link>
 
-            {/* Interaction bar — outside the Link so clicks don't navigate */}
+            {/* Interaction bar - outside the Link so clicks don't navigate */}
             <PostInteractions postId={post.id} />
         </div>
     );

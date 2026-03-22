@@ -72,7 +72,7 @@ const Navbar = () => {
     }
   }, [isAuthenticated, user, socket]);
 
-  /* Pick the correct link set — NEVER mix user + admin */
+  /* Pick the correct link set - NEVER mix user + admin */
   const links = isAuthenticated ? (isAdmin ? adminLinks : userLinks) : guestLinks;
 
   const handleSignOut = async () => {

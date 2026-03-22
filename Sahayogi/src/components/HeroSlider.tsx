@@ -4,17 +4,26 @@ import { ChevronLeft, ChevronRight, CheckCircle2, Heart, TrendingUp, FileText, P
 
 // Import images from assets
 import Home from '../assets/Home.png';
-import heroSlide2 from '../assets/hero-slide-2.jpg';
-import heroSlide3 from '../assets/hero-slide-3.jpg';
-import heroSlide4 from '../assets/hero-slide-4.jpg';
-import heroSlide5 from '../assets/hero-slide-5.jpg';
+import Home2 from '../assets/home 2.avif';
 
 const slides = [
   {
     id: 1,
     image: Home,
-    title: 'Community',
-    subtitle: 'Across Nepal'
+    title: 'Empowering Nepal',
+    subtitle: 'हाम्रो साझा समुदाय'
+  },
+  {
+    id: 2,
+    image: Home2,
+    title: 'Solidarity in Action',
+    subtitle: 'सहयोगमा अटुट एकता'
+  },
+  {
+    id: 3,
+    image: Home,
+    title: 'Changing Lives',
+    subtitle: 'स्थानीय प्रभाव, वास्तविक परिवर्तन'
   }
 ];
 
@@ -37,32 +46,53 @@ const HeroSlider = () => {
   }, [isTransitioning]);
 
   useEffect(() => {
-    const timer = setInterval(next, 6000);
+    const timer = setInterval(next, 3000);
     return () => clearInterval(timer);
   }, [next]);
 
   return (
     <section className="relative w-full h-[100vh] overflow-hidden bg-background">
-      {/* Background Slider */}
+      {/* Background Slider - Cinematic Ken Burns Effect */}
       <div className="absolute inset-0 z-0">
         {slides.map((slide, index) => (
           <div
             key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-1500 ease-in-out ${index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              }`}
+            className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
+              index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
+            }`}
           >
             <img
               src={slide.image}
               alt={`Slide ${slide.id}`}
-              className={`w-full h-full object-cover transition-transform duration-[12000ms] ${index === current ? 'scale-110' : 'scale-100'}`}
-              style={{ transitionTimingFunction: index === current ? 'var(--ease-fluid)' : 'linear' }}
+              className={`w-full h-full object-cover transition-transform duration-[6000ms] ease-linear ${
+                index === current ? 'scale-110 translate-y-2' : 'scale-100 translate-y-0'
+              }`}
+              style={{ 
+                filter: 'contrast(1.1) saturate(1.1) brightness(1.05)',
+              }}
               loading={index === 0 ? 'eager' : 'lazy'}
             />
-            {/* Cinematic Overlay: Warm Gradients */}
-            <div className="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent z-10" />
-            <div className="absolute inset-0 bg-primary/10 mix-blend-multiply z-10" />
+            {/* Darker Cinematic Overlay for better readability */}
+            <div className="absolute inset-0 bg-black/40 z-10" />
+            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent z-10" />
+            <div className="absolute inset-x-0 top-0 h-1/4 bg-gradient-to-b from-black/40 to-transparent z-10" />
           </div>
         ))}
+      </div>
+
+      {/* Dynamic SVG Decoration - Animated Mandala Ring */}
+      <div className="absolute inset-0 z-10 opacity-[0.03] pointer-events-none overflow-hidden">
+        <svg 
+          className="absolute -right-[10%] top-1/2 -translate-y-1/2 w-[800px] h-[800px] animate-spin-slow text-primary" 
+          viewBox="0 0 100 100"
+        >
+          <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="0.1" strokeDasharray="2 2" />
+          <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" strokeWidth="0.05" />
+          <path d="M50 2 L52 10 L48 10 Z" fill="currentColor" transform="rotate(0 50 50)" />
+          {Array.from({ length: 12 }).map((_, i) => (
+            <path key={i} d="M50 5 L51 12 L49 12 Z" fill="currentColor" transform={`rotate(${i * 30} 50 50)`} />
+          ))}
+        </svg>
       </div>
 
       {/* Main Content Layout */}
@@ -76,13 +106,18 @@ const HeroSlider = () => {
             Direct Impact across Nepal
           </div>
 
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight text-foreground font-bold mb-8 tracking-tight drop-shadow-sm">
-            {slides[current].title} <br />
-            <span className="text-primary/90 italic font-semibold">{slides[current].subtitle}.</span>
+          <h1 
+            key={current}
+            className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[1.05] text-white font-bold mb-10 tracking-tight animate-slide-up"
+          >
+            <div className="mb-4 drop-shadow-lg">{slides[current].title}</div>
+            <div className="text-amber-400 italic text-3xl sm:text-4xl md:text-5xl font-medium tracking-normal drop-shadow-md">
+              {slides[current].subtitle}
+            </div>
           </h1>
 
-          <p className="text-sm sm:text-base text-foreground/60 mb-10 leading-relaxed max-w-md border-l-2 border-primary/30 pl-5 text-left">
-            Connecting hearts with local needs — transparent, verified, and impactful giving across the Himalayas.
+          <p className="text-xs sm:text-sm md:text-base text-white/90 mb-10 leading-relaxed max-w-md border-l-2 border-amber-400/50 pl-5 text-left transition-all duration-700 delay-150 font-semibold drop-shadow-sm">
+            नेपालका स्थानीय आवश्यकताहरूलाई मनसँग जोड्दै - पारदर्शी, प्रमाणित, र प्रभावकारी सहयोग।
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 mb-12 w-full sm:w-auto">

@@ -5,12 +5,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 const INITIAL_DRIVES = [
-    { id: '1', title: 'Clothes Drive — Kathmandu', date: 'Falgun 15', org: 'Sahayogi Volunteers', spots: 34 },
-    { id: '2', title: 'Food Distribution — Sindhupalchok', date: 'Falgun 18', org: 'Local NGO Collective', spots: 12 },
-    { id: '3', title: 'School Kit Collection — Pokhara', date: 'Falgun 22', org: 'Kids First Nepal', spots: 50 },
-    { id: '4', title: 'Free Health Camp — Chitwan', date: 'Chaitra 2', org: 'Medical Volunteers', spots: 25 },
-    { id: '5', title: 'Blood Donation — Lalitpur', date: 'Chaitra 5', org: 'Red Cross Society', spots: 100 },
-    { id: '6', title: 'Blanket Distribution — Jumla', date: 'Chaitra 10', org: 'Himalayan Relief Fund', spots: 15 },
+    { id: '1', title: 'Clothes Drive - Kathmandu', date: 'Falgun 15', org: 'Sahayogi Volunteers', spots: 34 },
+    { id: '2', title: 'Food Distribution - Sindhupalchok', date: 'Falgun 18', org: 'Local NGO Collective', spots: 12 },
+    { id: '3', title: 'School Kit Collection - Pokhara', date: 'Falgun 22', org: 'Kids First Nepal', spots: 50 },
+    { id: '4', title: 'Free Health Camp - Chitwan', date: 'Chaitra 2', org: 'Medical Volunteers', spots: 25 },
+    { id: '5', title: 'Blood Donation - Lalitpur', date: 'Chaitra 5', org: 'Red Cross Society', spots: 100 },
+    { id: '6', title: 'Blanket Distribution - Jumla', date: 'Chaitra 10', org: 'Himalayan Relief Fund', spots: 15 },
 ];
 
 export const UpcomingDrives = ({ compact = false }: { compact?: boolean }) => {

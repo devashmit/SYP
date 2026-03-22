@@ -288,9 +288,9 @@ const Browse = () => {
               </h3>
               <div className="space-y-2.5">
                 {[
-                  { label: 'Clothes drive — Bhaktapur', count: 12, icon: Users },
-                  { label: 'School books — Pokhara', count: 8, icon: BookOpen },
-                  { label: 'Winter aid — Sindhupalchok', count: 34, icon: Heart },
+                  { label: 'Clothes drive - Bhaktapur', count: 12, icon: Users },
+                  { label: 'School books - Pokhara', count: 8, icon: BookOpen },
+                  { label: 'Winter aid - Sindhupalchok', count: 34, icon: Heart },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
