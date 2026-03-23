@@ -49,7 +49,7 @@ const Navbar = () => {
 
   useEffect(() => {
     if (!isAuthenticated || !user) return;
-    
+
     const fetchUnread = async () => {
       try {
         const token = sessionStorage.getItem('sahayogi_token');
@@ -61,11 +61,11 @@ const Navbar = () => {
           const total = convos.reduce((sum: number, c: any) => sum + c.unread_count, 0);
           setUnreadMessageCount(total);
         }
-      } catch (e) {}
+      } catch (e) { }
     };
-    
+
     fetchUnread();
-    
+
     if (socket) {
       socket.on('receive_message', fetchUnread);
       return () => { socket.off('receive_message', fetchUnread); };
@@ -92,12 +92,14 @@ const Navbar = () => {
         to={isAuthenticated ? (isAdmin ? '/admin/dashboard' : '/feed') : '/'}
         className="flex items-center gap-2.5 group"
       >
-        <img
-          src={sahayogiLogo}
-          alt="Sahayogi"
-          className="h-8 w-auto object-contain group-hover:scale-105 transition-transform duration-500"
-        />
-        <span className="font-semibold text-base text-foreground tracking-tight">
+        <div className="relative shrink-0">
+          <img
+            src={sahayogiLogo}
+            alt="Sahayogi"
+            className="h-14 w-auto object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-[0_0_12px_rgba(var(--primary-rgb),0.15)]"
+          />
+        </div>
+        <span className="font-extrabold text-2xl tracking-tighter gemini-gradient drop-shadow-sm hidden sm:block">
           Sahayogi
         </span>
       </Link>

@@ -28,15 +28,15 @@ const FeedHero = ({ username }: FeedHeroProps) => {
             </div>
 
             <div className="container mx-auto px-5 max-w-5xl relative z-10">
-                <div className="flex items-center gap-2 mb-2 animate-fade-in">
-                    <Rss className="w-4 h-4 text-primary" />
-                    <span className="text-[11px] font-bold text-primary uppercase tracking-[0.1em]">Global Feed</span>
+                <div className="flex items-center gap-2 mb-3 animate-fade-in group cursor-default">
+                    <Rss className="w-4 h-4 text-primary group-hover:rotate-12 transition-transform" />
+                    <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] bg-primary/5 px-2 py-0.5 rounded-full">Global Feed</span>
                 </div>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground mb-3 animate-slide-up">
-                    Namaste, <span className="text-primary">{username || 'Community'}</span>
+                <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tighter text-foreground mb-4 animate-slide-up leading-[1.1]">
+                    Namaste, <span className="gemini-gradient">{username || 'Community'}</span>
                 </h1>
-                <p className="text-sm sm:text-base text-muted-foreground max-w-sm sm:max-w-md animate-slide-up animation-delay-100 italic font-medium leading-relaxed">
-                    Real stories and direct help requests from people across the country.
+                <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-sm sm:max-w-md lg:max-w-lg animate-slide-up animation-delay-100 font-medium leading-relaxed border-l-2 border-primary/20 pl-4">
+                    Real stories and <span className="text-primary/80 italic font-serif">direct help requests</span> from people across the country.
                 </p>
             </div>
         </div>

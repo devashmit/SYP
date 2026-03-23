@@ -56,7 +56,7 @@ const Browse = () => {
 
   useEffect(() => {
     if (!socket) return;
-    const handlePostCreated = (newPost: any) => {
+    const handlePostCreated = (newPost: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       if (newPost.post_type !== 'user_post' || newPost.status !== 'available') return;
       if (selectedCategory !== 'all' && newPost.categories?.name !== selectedCategory) return;
       
@@ -120,13 +120,15 @@ const Browse = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background/98 via-background/85 to-background/40" />
         <div className="absolute inset-0 flex items-center">
-          <div className="container mx-auto px-5 max-w-5xl">
-            <span className="text-[10px] font-semibold text-primary/80 uppercase tracking-wider mb-1 block">Community feed</span>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight leading-tight mb-1">Browse Causes</h1>
-            <p className="text-xs text-muted-foreground max-w-xs">
-              Verified donations and requests from communities across Nepal.
-            </p>
-          </div>
+            <div className="container mx-auto px-5 max-w-5xl">
+              <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-2 block bg-primary/5 w-fit px-2 py-0.5 rounded-full">Community Archive</span>
+              <h1 className="text-4xl lg:text-5xl font-extrabold text-foreground tracking-tighter leading-tight mb-2">
+                Browse <span className="gemini-gradient">Causes</span>
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-xs sm:max-w-sm font-medium leading-relaxed border-l-2 border-primary/20 pl-3">
+                Verified donations and <span className="italic font-serif text-primary/80">proven impact</span> from communities across Nepal.
+              </p>
+            </div>
         </div>
       </div>
 

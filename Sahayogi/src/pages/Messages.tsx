@@ -215,13 +215,16 @@ export default function Messages() {
 
           {/* Conversations list */}
           <div className="rounded-2xl border border-border bg-white overflow-hidden flex flex-col shadow-sm">
-            <div className="px-5 py-4 border-b border-border flex items-center justify-between bg-muted/10">
-              <div className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-primary" />
-                <h2 className="font-bold text-foreground text-lg tracking-tight">Signal Intelligence</h2>
+            <div className="px-5 py-5 border-b border-border flex items-center justify-between bg-white relative overflow-hidden">
+              <div className="absolute inset-0 bg-primary/5 opacity-50" />
+              <div className="flex items-center gap-3 relative z-10">
+                <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                  <MessageCircle className="w-5 h-5" />
+                </div>
+                <h2 className="font-bold text-foreground text-xl tracking-tighter gemini-gradient">Signal Intelligence</h2>
               </div>
-              <span className="text-xs font-semibold text-muted-foreground bg-muted px-2 py-1 rounded-md">
-                {conversations.length} {conversations.length === 1 ? 'chat' : 'chats'}
+              <span className="text-[10px] font-bold text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full border border-border/50 relative z-10 uppercase tracking-wider">
+                {conversations.length} Active
               </span>
             </div>
 
@@ -257,11 +260,12 @@ export default function Messages() {
                     <button
                       key={conv.user_id}
                       onClick={() => setSelectedUserId(conv.user_id)}
-                      className={`w-full p-4 text-left border-b border-border/50 transition-all duration-200 ${isSelected
-                        ? 'bg-primary/6 border-l-4 border-l-primary pl-3'
-                        : 'hover:bg-muted/50 border-l-4 border-l-transparent'
+                      className={`w-full p-4 text-left border-b border-border/40 transition-all duration-300 relative group overflow-hidden ${isSelected
+                        ? 'bg-primary/[0.03] pl-3'
+                        : 'hover:bg-muted/30'
                         }`}
                     >
+                      {isSelected && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary animate-fade-in" />}
                       <div className="flex items-center gap-3">
                         <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${avatarGradient(letter)} flex items-center justify-center text-white font-bold text-base shadow-sm shrink-0`}>
                           {letter}
@@ -311,8 +315,8 @@ export default function Messages() {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-5 bg-muted/5">
-                  <div className="space-y-3">
+                <div className="flex-1 overflow-y-auto p-5 compassionate-bg rounded-b-3xl">
+                  <div className="space-y-4 relative z-10">
                     {messages.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-16 text-center">
                         <div className="w-20 h-20 rounded-full overflow-hidden mb-4 shadow-md animate-float">
@@ -334,9 +338,9 @@ export default function Messages() {
                             style={{ animationDelay: `${Math.min(idx, 5) * 30}ms` }}
                           >
                             <div
-                              className={`max-w-[70%] rounded-2xl px-4 py-2.5 shadow-sm ${isMine
-                                ? 'rounded-br-sm text-white bg-primary'
-                                : 'rounded-bl-sm bg-muted text-foreground'
+                              className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-5 py-3 shadow-sm transition-all animate-message-pop ${isMine
+                                ? 'rounded-br-sm text-white bg-primary shadow-primary/20'
+                                : 'rounded-bl-sm bg-white border border-border/60 text-foreground'
                                 }`}
                             >
                               <p className={`text-sm leading-relaxed whitespace-pre-wrap break-words ${isMine ? 'text-white' : 'text-foreground'}`}>
@@ -371,9 +375,9 @@ export default function Messages() {
                     <Button
                       onClick={handleSendMessage}
                       disabled={!newMessage.trim()}
-                      className="w-12 h-12 rounded-2xl p-0 shrink-0 bg-primary text-white shadow-lg shadow-primary/20 disabled:opacity-50 transition-all hover:scale-110 active:scale-95"
+                      className="w-14 h-14 rounded-2xl p-0 shrink-0 bg-primary text-white shadow-xl shadow-primary/20 disabled:opacity-50 transition-all hover:scale-105 active:scale-95 group"
                     >
-                      <Send className="h-4 w-4" />
+                      <Send className="h-5 w-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                     </Button>
                   </div>
                 </div>
