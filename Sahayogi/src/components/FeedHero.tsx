@@ -33,7 +33,7 @@ const FeedHero = ({ username }: FeedHeroProps) => {
                     <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] bg-primary/5 px-2 py-0.5 rounded-full">Global Feed</span>
                 </div>
                 <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tighter text-foreground mb-4 animate-slide-up leading-[1.1]">
-                    Namaste, <span className="gemini-gradient">{username || 'Community'}</span>
+                    Namaste, <span className="gradient-text">{username || 'Community'}</span>
                 </h1>
                 <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-sm sm:max-w-md lg:max-w-lg animate-slide-up animation-delay-100 font-medium leading-relaxed border-l-2 border-primary/20 pl-4">
                     Real stories and <span className="text-primary/80 italic font-serif">direct help requests</span> from people across the country.

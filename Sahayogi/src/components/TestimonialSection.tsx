@@ -100,7 +100,7 @@ const TestimonialSection = () => {
 
     return (
         <section
-            className="relative overflow-hidden min-h-screen lg:min-h-[700px] flex items-center justify-center"
+            className="relative overflow-hidden min-h-[500px] lg:min-h-[700px] flex items-center justify-center"
             style={{
                 background: 'linear-gradient(160deg, #fdfaf6 0%, #fef9f2 60%, #fdf6ee 100%)',
             }}

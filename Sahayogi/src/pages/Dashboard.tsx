@@ -29,10 +29,14 @@ const API_URL = 'http://localhost:3000/api';
 const Dashboard = () => {
     const { user } = useAuth();
     const [myPosts, setMyPosts] = useState<any[]>([]);
+    const [historyPosts, setHistoryPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (user) fetchMyPosts();
+        if (user) {
+            fetchMyPosts();
+            fetchHistoryPosts();
+        }
     }, [user]);
 
     const fetchMyPosts = async () => {
@@ -50,6 +54,21 @@ const Dashboard = () => {
             console.error('Error fetching my posts:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchHistoryPosts = async () => {
+        try {
+            const token = sessionStorage.getItem('sahayogi_token');
+            const res = await fetch(`${API_URL}/history`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setHistoryPosts(data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching history posts:', error);
         }
     };
 
@@ -358,24 +377,34 @@ const Dashboard = () => {
 
                     {/* History Tab */}
                     <TabsContent value="history" className="animate-fade-in-up">
-                        <Card className="rounded-2xl border-border shadow-none">
-                            <CardHeader className="pb-3 border-b border-border/60">
-                                <CardTitle className="text-sm font-semibold">Donation History</CardTitle>
-                                <CardDescription className="text-xs">A record of your completed contributions and exchanges.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="py-20 text-center flex flex-col items-center">
-                                <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mb-4">
-                                    <History className="w-8 h-8 text-muted-foreground/20" />
+                        <div className="max-w-2xl space-y-4">
+                            {loading ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
                                 </div>
-                                <h3 className="text-sm font-bold text-foreground mb-1">No past exchanges</h3>
-                                <p className="text-[11px] text-muted-foreground max-w-[200px] mb-6">
-                                    Once you complete a donation or receive items, your history will be archived here.
-                                </p>
-                                <Link to="/browse">
-                                    <Button variant="secondary" size="sm" className="rounded-xl px-5 text-[10px] font-bold">Discover causes</Button>
-                                </Link>
-                            </CardContent>
-                        </Card>
+                            ) : historyPosts.length > 0 ? (
+                                historyPosts.map(post => <PostCard key={post.id} post={post} />)
+                            ) : (
+                                <Card className="rounded-2xl border-border shadow-none">
+                                    <CardHeader className="pb-3 border-b border-border/60">
+                                        <CardTitle className="text-sm font-semibold">Interaction History</CardTitle>
+                                        <CardDescription className="text-xs">Posts you've reacted to or commented on.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="py-20 text-center flex flex-col items-center">
+                                        <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mb-4">
+                                            <History className="w-8 h-8 text-muted-foreground/20" />
+                                        </div>
+                                        <h3 className="text-sm font-bold text-foreground mb-1">No past interactions</h3>
+                                        <p className="text-[11px] text-muted-foreground max-w-[200px] mb-6">
+                                            Once you react to or comment on a post, it will appear here in your history.
+                                        </p>
+                                        <Link to="/browse">
+                                            <Button variant="secondary" size="sm" className="rounded-xl px-5 text-[10px] font-bold">Discover causes</Button>
+                                        </Link>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
                     </TabsContent>
 
                     {/* Messages Tab */}

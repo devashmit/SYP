@@ -69,8 +69,13 @@
 }
 
 @layer base {
-  * {
+  *, *::before, *::after {
+    box-sizing: border-box;
     @apply border-border;
+  }
+
+  html {
+    min-height: 100dvh;
   }
 
   body {

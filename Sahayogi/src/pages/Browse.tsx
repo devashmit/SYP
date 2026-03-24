@@ -111,7 +111,7 @@ const Browse = () => {
       <Navbar />
 
       {/* Hero Header */}
-      <div className="w-full relative h-44 overflow-hidden mandala-bg grain-overlay">
+      <div className="w-full relative min-h-[176px] h-auto overflow-hidden mandala-bg grain-overlay">
         <div className="vignette-top" />
         <img
           src="/images/hero/boudhanath-stupa-in-kathmandu-nepal.webp"
@@ -123,7 +123,7 @@ const Browse = () => {
             <div className="container mx-auto px-5 max-w-5xl">
               <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-2 block bg-primary/5 w-fit px-2 py-0.5 rounded-full">Community Archive</span>
               <h1 className="text-4xl lg:text-5xl font-extrabold text-foreground tracking-tighter leading-tight mb-2">
-                Browse <span className="gemini-gradient">Causes</span>
+                Browse <span className="gradient-text">Causes</span>
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground max-w-xs sm:max-w-sm font-medium leading-relaxed border-l-2 border-primary/20 pl-3">
                 Verified donations and <span className="italic font-serif text-primary/80">proven impact</span> from communities across Nepal.

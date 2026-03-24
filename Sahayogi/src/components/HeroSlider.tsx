@@ -35,18 +35,18 @@ const HeroSlider = () => {
     if (isTransitioning) return;
     setIsTransitioning(true);
     setCurrent((prev) => (prev + 1) % slides.length);
-    setTimeout(() => setIsTransitioning(false), 1000);
+    setTimeout(() => setIsTransitioning(false), 1400);
   }, [isTransitioning]);
 
   const prev = useCallback(() => {
     if (isTransitioning) return;
     setIsTransitioning(true);
     setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
-    setTimeout(() => setIsTransitioning(false), 1000);
+    setTimeout(() => setIsTransitioning(false), 1400);
   }, [isTransitioning]);
 
   useEffect(() => {
-    const timer = setInterval(next, 3000);
+    const timer = setInterval(next, 6000);
     return () => clearInterval(timer);
   }, [next]);
 
@@ -57,7 +57,7 @@ const HeroSlider = () => {
         {slides.map((slide, index) => (
           <div
             key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
+            className={`absolute inset-0 transition-opacity duration-[1200ms] ease-in-out ${
               index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
             }`}
           >

@@ -367,6 +367,36 @@ module.exports = function createPostsRouter(io) {
         }
     });
 
+    // GET /api/posts/history (mounted at /api level in index.js)
+    router.get('/history', authenticateToken, async (req, res) => {
+        try {
+            const userId = req.user.id;
+
+            // Find posts where user reacted OR commented
+            const historyPosts = await prisma.post.findMany({
+                where: {
+                    OR: [
+                        { reactions: { some: { user_id: userId } } },
+                        { comments: { some: { user_id: userId } } }
+                    ]
+                },
+                include: {
+                    user: { select: { username: true } },
+                    category: { select: { name: true } }
+                },
+                orderBy: { created_at: 'desc' }
+            });
+
+            res.json(historyPosts.map(p => ({
+                ...p,
+                profiles: p.user,
+                categories: p.category
+            })));
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+
     // POST /api/community-needs
     router.post('/community-needs', authenticateToken, async (req, res) => {
         try {

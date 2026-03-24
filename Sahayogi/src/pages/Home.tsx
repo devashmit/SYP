@@ -109,7 +109,7 @@ const Home = () => {
       {/* ─── LIVE IMPACT STRIP ─────────────────────────────────── */}
       <div className="bg-foreground text-background border-b border-foreground/10">
         <div className="container mx-auto px-4 max-w-5xl">
-          <div className="flex items-center gap-0 overflow-x-auto scrollbar-hide divide-x divide-background/10">
+          <div className="flex items-center gap-0 overflow-x-auto scrollbar-hide divide-x divide-background/10 min-w-0">
             {/* Live indicator */}
             <div className="flex items-center gap-2 px-4 py-3 shrink-0">
               <span className="live-dot w-2 h-2 rounded-full bg-emerald-400 inline-block" />
@@ -280,7 +280,7 @@ const Home = () => {
             <p className="text-sm text-muted-foreground">Three steps to connect givers with those who need.</p>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 sm:gap-5 max-w-3xl mx-auto px-1">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 max-w-3xl mx-auto px-1">
             {steps.map((step, i) => (
               <div
                 key={i}

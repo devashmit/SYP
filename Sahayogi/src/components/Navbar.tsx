@@ -99,7 +99,7 @@ const Navbar = () => {
             className="h-14 w-auto object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-[0_0_12px_rgba(var(--primary-rgb),0.15)]"
           />
         </div>
-        <span className="font-extrabold text-2xl tracking-tighter gemini-gradient drop-shadow-sm hidden sm:block">
+        <span className="font-extrabold text-2xl tracking-tighter gradient-text drop-shadow-sm hidden sm:block">
           Sahayogi
         </span>
       </Link>
@@ -176,7 +176,7 @@ const Navbar = () => {
 
         {/* Mobile burger */}
         <button
-          className="md:hidden w-9 h-9 rounded-lg bg-muted/50 flex items-center justify-center hover:bg-muted transition-all text-foreground"
+          className="md:hidden w-11 h-11 rounded-lg bg-muted/50 flex items-center justify-center hover:bg-muted transition-all text-foreground"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
         >

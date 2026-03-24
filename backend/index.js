@@ -81,7 +81,7 @@ app.use('/api/admin', createAdminRouter(io));
 // from completely hijacking other root-level /api/xxxx endpoints.
 app.use('/api', (req, res, next) => {
     const p = req.path;
-    if (p === '/categories' || p === '/my-posts' || p === '/community-needs') {
+    if (p === '/categories' || p === '/my-posts' || p === '/community-needs' || p === '/history') {
         return postsRouter(req, res, next);
     }
     if (p === '/conversations') {
