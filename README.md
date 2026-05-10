@@ -217,19 +217,9 @@ Authentication is required for socket connections via JWT in the handshake.
 
 ---
 
-## Team
+## Author
 
-| Name | Role |
-|------|------|
-| Devashmit | Backend + Full-stack |
-| Nischal | Frontend |
-| Prakriti | Frontend |
-| Pritam | Frontend |
-| Riwaj | Frontend |
-| Sameer | Frontend |
-| Sujit | Frontend |
-| Supriya | Frontend |
-| Ujjwal | Frontend |
+Built by [Devashmit](https://github.com/devashmit).
 
 ---
 
