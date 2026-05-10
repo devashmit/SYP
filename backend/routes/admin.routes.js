@@ -2,6 +2,7 @@ const express = require('express');
 const prisma = require('../prisma/client');
 const authenticateToken = require('../middleware/auth.middleware');
 const isAdmin = require('../middleware/admin.middleware');
+const notificationService = require('../services/notification.service');
 
 module.exports = function createAdminRouter(io) {
     const router = express.Router();
@@ -48,27 +49,12 @@ module.exports = function createAdminRouter(io) {
             });
             const finalPost = { ...post, profiles: post.user, categories: post.category };
 
-            await prisma.notification.create({
-                data: {
-                    user_id: post.user_id, type: 'post_approved',
-                    message: `Your post "${post.title}" has been approved and is now live!`, post_id: post.id
-                }
+            notificationService.queue({
+                userId: post.user_id,
+                type: 'ADMIN_APPROVAL',
+                message: `Your post "${post.title}" has been approved and is now live!`,
+                relatedEntityId: post.id
             });
-            io.to(post.user_id).emit('notification_received');
-
-            const allOtherUsers = await prisma.profile.findMany({
-                where: { id: { not: post.user_id }, role: { not: 'admin' } },
-                select: { id: true }
-            });
-            if (allOtherUsers.length > 0) {
-                await prisma.notification.createMany({
-                    data: allOtherUsers.map(u => ({
-                        user_id: u.id, type: 'new_post',
-                        message: `A new cause "${post.title}" was just posted.`, post_id: post.id
-                    }))
-                });
-                allOtherUsers.forEach(u => io.to(u.id).emit('notification_received'));
-            }
 
             io.emit('post_created', finalPost);
             res.json(finalPost);
@@ -86,16 +72,14 @@ module.exports = function createAdminRouter(io) {
                 data: { status: 'rejected' }
             });
 
-            await prisma.notification.create({
-                data: {
-                    user_id: post.user_id, type: 'post_rejected',
-                    message: reason
-                        ? `Your post "${post.title}" was rejected: ${reason}`
-                        : `Your post "${post.title}" was rejected by an admin.`,
-                    post_id: post.id
-                }
+            notificationService.queue({
+                userId: post.user_id,
+                type: 'SYSTEM',
+                message: reason
+                    ? `Your post "${post.title}" was rejected: ${reason}`
+                    : `Your post "${post.title}" was rejected by an admin.`,
+                relatedEntityId: post.id
             });
-            io.to(post.user_id).emit('notification_received');
             res.json({ success: true });
         } catch (error) {
             res.status(400).json({ error: error.message });

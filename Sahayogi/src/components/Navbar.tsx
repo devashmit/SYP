@@ -7,13 +7,10 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { NotificationsDropdown } from '@/components/NotificationsDropdown';
 import { useState, useEffect } from 'react';
-import sahayogiLogo from '@/assets/logo.jpg';
+import sahayogiLogo from '@/assets/Logo.svg';
+import { useSocket } from '@/contexts/SocketContext';
 
-/* ─── Role-based nav config ───────────────────────────────────────────── */
-const guestLinks = [
-  { to: '/browse', label: 'Browse', icon: LayoutGrid },
-  { to: '/community-needs', label: 'Community Needs', icon: Heart },
-];
+const guestLinks: { to: string, label: string, icon: any }[] = [];
 
 const userLinks = [
   { to: '/feed', label: 'Feed', icon: Rss },
@@ -33,8 +30,10 @@ const Navbar = () => {
   const { user, authStatus, isAdmin, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
+  const { socket } = useSocket();
 
   // Must call all hooks BEFORE any early return (React rule)
   useEffect(() => {
@@ -48,7 +47,32 @@ const Navbar = () => {
 
   const isAuthenticated = authStatus === 'authenticated';
 
-  /* Pick the correct link set — NEVER mix user + admin */
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+
+    const fetchUnread = async () => {
+      try {
+        const token = sessionStorage.getItem('sahayogi_token');
+        const res = await fetch('http://localhost:3000/api/messages/conversations', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const convos = await res.json();
+          const total = convos.reduce((sum: number, c: any) => sum + c.unread_count, 0);
+          setUnreadMessageCount(total);
+        }
+      } catch (e) { }
+    };
+
+    fetchUnread();
+
+    if (socket) {
+      socket.on('receive_message', fetchUnread);
+      return () => { socket.off('receive_message', fetchUnread); };
+    }
+  }, [isAuthenticated, user, socket]);
+
+  /* Pick the correct link set - NEVER mix user + admin */
   const links = isAuthenticated ? (isAdmin ? adminLinks : userLinks) : guestLinks;
 
   const handleSignOut = async () => {
@@ -68,12 +92,14 @@ const Navbar = () => {
         to={isAuthenticated ? (isAdmin ? '/admin/dashboard' : '/feed') : '/'}
         className="flex items-center gap-2.5 group"
       >
-        <img
-          src={sahayogiLogo}
-          alt="Sahayogi"
-          className="h-8 w-auto object-contain group-hover:scale-105 transition-transform duration-500"
-        />
-        <span className="font-semibold text-base text-foreground tracking-tight">
+        <div className="relative shrink-0">
+          <img
+            src={sahayogiLogo}
+            alt="Sahayogi"
+            className="h-14 w-auto object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-[0_0_12px_rgba(var(--primary-rgb),0.15)]"
+          />
+        </div>
+        <span className="font-extrabold text-2xl tracking-tighter gradient-text drop-shadow-sm hidden sm:block">
           Sahayogi
         </span>
       </Link>
@@ -86,13 +112,18 @@ const Navbar = () => {
             <Link
               key={to}
               to={to}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${active
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative ${active
                 ? 'bg-white text-foreground shadow-sm border border-border/40'
                 : 'text-muted-foreground hover:text-foreground hover:bg-white/60'
                 }`}
             >
               <Icon className={`w-4 h-4 ${active ? 'text-primary' : ''}`} />
               {label}
+              {to === '/messages' && unreadMessageCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-sm ring-2 ring-white animate-in zoom-in">
+                  {unreadMessageCount}
+                </span>
+              )}
             </Link>
           );
         })}
@@ -145,7 +176,7 @@ const Navbar = () => {
 
         {/* Mobile burger */}
         <button
-          className="md:hidden w-9 h-9 rounded-lg bg-muted/50 flex items-center justify-center hover:bg-muted transition-all text-foreground"
+          className="md:hidden w-11 h-11 rounded-lg bg-muted/50 flex items-center justify-center hover:bg-muted transition-all text-foreground"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
         >
@@ -170,6 +201,11 @@ const Navbar = () => {
               >
                 <Icon className="w-4 h-4" />
                 {label}
+                {to === '/messages' && unreadMessageCount > 0 && (
+                  <span className="ml-auto flex h-5 px-2 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm">
+                    {unreadMessageCount} new
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -182,7 +218,7 @@ const Navbar = () => {
                   <img
                     src={sahayogiLogo}
                     alt="Logo"
-                    className="w-8 h-8 rounded-full object-cover"
+                    className="w-8 h-8 rounded-full object-contain"
                   />
                   <div>
                     <p className="text-sm font-semibold text-foreground leading-none">

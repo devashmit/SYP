@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import sahayogiLogo from '@/assets/Logo.svg';
 
 // ─── Trust signal data ────────────────────────────────────────────────
 const TRUST_SIGNALS = [
@@ -80,24 +81,7 @@ const Footer = () => {
                             onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.02)')}
                             onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
                         >
-                            <div
-                                style={{
-                                    width: '34px',
-                                    height: '34px',
-                                    borderRadius: '10px',
-                                    background: 'hsl(355 68% 40%)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: '#fff',
-                                    fontWeight: 700,
-                                    fontSize: '14px',
-                                    boxShadow: '0 2px 10px hsl(355 68% 40% / 0.25)',
-                                    flexShrink: 0,
-                                }}
-                            >
-                                S
-                            </div>
+                            <img src={sahayogiLogo} alt="Sahayogi Logo" className="h-8 w-auto object-contain max-w-[150px]" />
                             <span
                                 style={{
                                     fontWeight: 600,
@@ -119,7 +103,7 @@ const Footer = () => {
                                 margin: 0,
                             }}
                         >
-                            Giving with heart. Helping communities across Nepal.
+                            मनदेखि सहयोग। नेपालभरिका समुदायहरूलाई मद्दत।
                         </p>
                     </div>
 

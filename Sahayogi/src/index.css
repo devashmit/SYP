@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,39 +6,39 @@
 
 @layer base {
   :root {
-    /* === Core Palette === */
-    --background: 34 20% 97%;
-    --foreground: 20 25% 10%;
+    /* === Core Palette: Warm Cultural Theme === */
+    --background: 34 35% 98.5%; /* Lighter, warmer background */
+    --foreground: 20 25% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 20 25% 10%;
+    --card-foreground: 20 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 20 25% 10%;
+    --popover-foreground: 20 25% 12%;
 
-    /* Deep Crimson – Nepal Red */
-    --primary: 355 68% 40%;
+    /* Rich Terracotta / Nepal Crimson Red */
+    --primary: 355 60% 45%; 
     --primary-foreground: 0 0% 100%;
 
-    /* Warm Sand */
-    --secondary: 38 40% 93%;
-    --secondary-foreground: 355 68% 40%;
+    /* Soft Warm Sand */
+    --secondary: 35 45% 94%;
+    --secondary-foreground: 355 60% 42%;
 
-    --muted: 30 12% 93%;
-    --muted-foreground: 20 12% 52%;
+    --muted: 30 15% 92%;
+    --muted-foreground: 20 12% 50%;
 
-    /* Saffron accent */
-    --accent: 34 85% 52%;
+    /* Warm Gold / Amber Accent */
+    --accent: 38 75% 58%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 78% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 12% 87%;
-    --input: 30 12% 90%;
-    --ring: 355 68% 40%;
+    --border: 30 15% 88%;
+    --input: 30 15% 91%;
+    --ring: 355 60% 45%;
 
-    --radius: 1rem;
+    --radius: 1.25rem; /* Softer, rounder feel */
 
     --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
     --ease-fluid: cubic-bezier(0.65, 0, 0.35, 1);
@@ -69,13 +69,19 @@
 }
 
 @layer base {
-  * {
+  *, *::before, *::after {
+    box-sizing: border-box;
     @apply border-border;
+  }
+
+  html {
+    min-height: 100dvh;
   }
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'DM Sans', 'Inter', sans-serif;
+    overflow-x: hidden;
+    font-family: 'Outfit', 'Inter', sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -89,19 +95,27 @@
   h4,
   h5,
   h6 {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Outfit', sans-serif;
     @apply tracking-tight;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
     line-height: 1.2;
+    font-weight: 700;
   }
 
   .font-serif {
-    font-family: 'Instrument Serif', 'Georgia', serif;
+    font-family: 'Playfair Display', 'Instrument Serif', serif;
   }
 
   /* Legacy compatibility */
   .font-playfair {
     font-family: 'Instrument Serif', serif;
+  }
+
+  /* Global Image Fitting */
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
   }
 }
 
@@ -109,7 +123,7 @@
    TYPOGRAPHY SCALE (reduced from massive)
    ================================================ */
 
-/* Section headings — were text-8xl, now more elegant */
+/* Section headings - were text-8xl, now more elegant */
 .display-xl {
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 700;
@@ -124,7 +138,7 @@
   line-height: 1.15;
 }
 
-/* Labels — tighter tracking, smaller */
+/* Labels - tighter tracking, smaller */
 .label-xs {
   font-size: 0.65rem;
   font-weight: 600;
@@ -579,14 +593,74 @@
 }
 
 /* ================================================
-   BRAND GRADIENT TEXT
+   BRAND GRADIENT TEXT & GEMINI STYLE
    ================================================ */
 
 .gradient-text {
-  background: linear-gradient(135deg, hsl(355 68% 40%) 0%, hsl(34 85% 52%) 100%);
+  background: linear-gradient(135deg, hsl(355 60% 45%) 0%, hsl(38 75% 58%) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.gemini-gradient {
+  background: linear-gradient(135deg, #FF9B82 0%, #FFD700 30%, #4B0082 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  text-shadow: 0 0 30px rgba(100, 100, 255, 0.15);
+}
+
+.gemini-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(178, 40, 38, 0.1);
+  box-shadow: 0 8px 32px rgba(178, 40, 38, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+/* Floral Pattern for Beautiful Backgrounds */
+.floral-bg {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23b22826' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.compassionate-bg {
+  background-image: url('./assets/compassionate_floral_bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.compassionate-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.82); /* Keep messages readable */
+  backdrop-filter: blur(2px);
+  z-index: 0;
+}
+
+.compassionate-bg > * {
+  position: relative;
+  z-index: 1;
+}
+
+.floral-accent {
+  position: relative;
+}
+
+.floral-accent::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 24px;
+  height: 24px;
+  opacity: 0.15;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z' fill='%23b22826'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
 /* ================================================
@@ -602,7 +676,7 @@
    GRAIN / NOISE TEXTURE (soft background structure)
    ================================================ */
 
-/* Subtle grain overlay — apply to any section for texture */
+/* Subtle grain overlay - apply to any section for texture */
 .grain-overlay {
   position: relative;
 }
@@ -619,7 +693,7 @@
   background-repeat: repeat;
 }
 
-/* Top vignette — anchors content */
+/* Top vignette - anchors content */
 .vignette-top::after {
   content: '';
   position: absolute;
@@ -1305,7 +1379,7 @@ a:active,
 }
 
 /* ================================================
-   FOCUS STATES (Task 9 — Accessibility)
+   FOCUS STATES (Task 9 - Accessibility)
    ================================================ */
 
 *:focus-visible {

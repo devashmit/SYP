@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from '@/hooks/use-toast';
-import { Send, ArrowLeft, MessageCircle, Inbox, Users, CheckCheck } from 'lucide-react';
+import { Send, ArrowLeft, MessageCircle, Inbox, CheckCheck } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Navbar from '@/components/Navbar';
+import { useSocket } from '@/contexts/SocketContext';
 
 interface Message {
   id: string;
@@ -21,6 +22,7 @@ interface Message {
 interface Conversation {
   user_id: string;
   username: string;
+  avatar_url?: string;
   last_message: string;
   last_message_time: string;
   unread_count: number;
@@ -28,7 +30,6 @@ interface Conversation {
 
 const API_URL = 'http://localhost:3000/api';
 
-// Gradient color per first letter
 function avatarGradient(letter: string) {
   const colors = [
     'from-primary to-primary-dark',
@@ -46,51 +47,26 @@ export default function Messages() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const { socket } = useSocket();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const selectedUserIdRef = useRef<string | null>(null); // Ref so socket closure sees latest
   const [selectedUsername, setSelectedUsername] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Keep ref up to date for the socket listener
   useEffect(() => {
-    const userParam = searchParams.get('user');
-    if (userParam) setSelectedUserId(userParam);
-    fetchConversations();
-  }, [user]);
-
-  useEffect(() => {
-    if (selectedUserId) {
-      fetchMessages(selectedUserId);
-      markMessagesAsRead(selectedUserId);
-      fetchSelectedUserProfile(selectedUserId);
-    }
+    selectedUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const fetchSelectedUserProfile = async (userId: string) => {
-    const existing = conversations.find((c) => c.user_id === userId);
-    if (existing) { setSelectedUsername(existing.username); return; }
-    try {
-      const token = sessionStorage.getItem('sahayogi_token');
-      const res = await fetch(`${API_URL}/profiles/${userId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const profile = await res.json();
-        setSelectedUsername(profile.username || 'Unknown');
-      }
-    } catch { setSelectedUsername('Unknown'); }
-  };
 
   const fetchConversations = async () => {
     try {
       const token = sessionStorage.getItem('sahayogi_token');
-      const res = await fetch(`${API_URL}/conversations`, {
+      const res = await fetch(`${API_URL}/messages/conversations`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -126,10 +102,77 @@ export default function Messages() {
       });
       fetchConversations();
     } catch (error) {
-      console.error('Error marking messages as read:', error);
+      console.error('Error marking messages read:', error);
     }
   };
 
+  // 1. On mount, load conversations (and handle URL param)
+  useEffect(() => {
+    if (!user) return;
+    const userParam = searchParams.get('user');
+    if (userParam) setSelectedUserId(userParam);
+    fetchConversations();
+  }, [user]);
+
+  // 2. On selecting a user, fetch their messages
+  useEffect(() => {
+    if (selectedUserId) {
+      fetchMessages(selectedUserId);
+      markMessagesAsRead(selectedUserId);
+      
+      // Attempt to get name from conversations list first
+      const existing = conversations.find((c) => c.user_id === selectedUserId);
+      if (existing) {
+        setSelectedUsername(existing.username);
+      } else {
+        // Fallback fetch if they aren't in the list
+        fetch(`${API_URL}/users/profiles/${selectedUserId}`, {
+          headers: { 'Authorization': `Bearer ${sessionStorage.getItem('sahayogi_token')}` }
+        })
+        .then(r => r.ok ? r.json() : null)
+        .then(profile => {
+          if (profile) setSelectedUsername(profile.username);
+        });
+      }
+    }
+  }, [selectedUserId]);
+
+  // 3. Register socket listener exactly ONCE
+  useEffect(() => {
+    if (!socket || !user) return;
+
+    const handleReceiveMessage = (message: Message) => {
+      // 1. Update the sidebar instantly
+      fetchConversations();
+
+      // 2. Append to current open thread if it belongs here
+      const currentSelectedID = selectedUserIdRef.current;
+      if (
+        currentSelectedID && 
+        (message.sender_id === currentSelectedID || message.receiver_id === currentSelectedID)
+      ) {
+        setMessages(prev => [...prev, message]);
+        
+        // If they sent it to us and we have chat open, mark it read
+        if (message.sender_id === currentSelectedID) {
+          markMessagesAsRead(currentSelectedID);
+        }
+      }
+    };
+
+    socket.on('receive_message', handleReceiveMessage);
+
+    return () => {
+      socket.off('receive_message', handleReceiveMessage);
+    };
+  }, [socket, user]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // 4. Send message - DO NOT call fetchMessages after
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedUserId) return;
     try {
@@ -147,9 +190,7 @@ export default function Messages() {
       });
 
       if (res.ok) {
-        setNewMessage('');
-        fetchMessages(selectedUserId);
-        fetchConversations();
+        setNewMessage(''); // Let the socket event update the thread!
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -170,16 +211,24 @@ export default function Messages() {
           Back to Home
         </Button>
 
-        <div className="grid md:grid-cols-3 gap-4 h-[calc(100vh-200px)]">
+        <div className="grid lg:grid-cols-3 gap-6 h-[calc(100vh-140px)] max-h-[800px]">
 
           {/* Conversations list */}
           <div className="rounded-2xl border border-border bg-white overflow-hidden flex flex-col shadow-sm">
-            <div className="px-5 py-4 border-b border-border flex items-center gap-2 bg-muted/5">
-              <MessageCircle className="w-5 h-5 text-primary" />
-              <h2 className="font-black text-foreground text-lg tracking-tighter uppercase">Signal Intelligence</h2>
+            <div className="px-5 py-5 border-b border-border flex items-center justify-between bg-white relative overflow-hidden">
+              <div className="absolute inset-0 bg-primary/5 opacity-50" />
+              <div className="flex items-center gap-3 relative z-10">
+                <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                  <MessageCircle className="w-5 h-5" />
+                </div>
+                <h2 className="font-bold text-foreground text-xl tracking-tighter gemini-gradient">Signal Intelligence</h2>
+              </div>
+              <span className="text-[10px] font-bold text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full border border-border/50 relative z-10 uppercase tracking-wider">
+                {conversations.length} Active
+              </span>
             </div>
 
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 overflow-y-auto">
               {loading ? (
                 <div className="p-5 space-y-3">
                   {[1, 2, 3].map(i => (
@@ -198,7 +247,7 @@ export default function Messages() {
                     <img
                       src="https://images.unsplash.com/photo-1544254254-8e434f0f0894?w=100&h=100&fit=crop&auto=format"
                       alt="No conversations"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   </div>
                   <p className="text-muted-foreground text-sm">No conversations yet</p>
@@ -211,18 +260,19 @@ export default function Messages() {
                     <button
                       key={conv.user_id}
                       onClick={() => setSelectedUserId(conv.user_id)}
-                      className={`w-full p-4 text-left border-b border-border/50 transition-all duration-200 ${isSelected
-                        ? 'bg-primary/6 border-l-4 border-l-primary pl-3'
-                        : 'hover:bg-muted/50 border-l-4 border-l-transparent'
+                      className={`w-full p-4 text-left border-b border-border/40 transition-all duration-300 relative group overflow-hidden ${isSelected
+                        ? 'bg-primary/[0.03] pl-3'
+                        : 'hover:bg-muted/30'
                         }`}
                     >
+                      {isSelected && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary animate-fade-in" />}
                       <div className="flex items-center gap-3">
                         <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${avatarGradient(letter)} flex items-center justify-center text-white font-bold text-base shadow-sm shrink-0`}>
                           {letter}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-0.5">
-                            <span className={`font-semibold text-sm ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                          <div className="flex items-center justify-between mb-0.5 whitespace-nowrap overflow-hidden">
+                            <span className={`font-semibold text-sm truncate pr-2 ${isSelected ? 'text-primary' : 'text-foreground'}`}>
                               {conv.username}
                             </span>
                             {conv.unread_count > 0 && (
@@ -231,9 +281,11 @@ export default function Messages() {
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground truncate">{conv.last_message}</p>
-                          <p className="text-xs text-muted-foreground/60 mt-0.5">
-                            {formatDistanceToNow(new Date(conv.last_message_time), { addSuffix: true })}
+                          <p className="text-xs text-muted-foreground truncate max-w-[150px] sm:max-w-[200px]">
+                            {conv.last_message || 'No messages yet'}
+                          </p>
+                          <p className="text-xs text-muted-foreground/60 mt-0.5 shrink-0 whitespace-nowrap">
+                            {conv.last_message_time ? formatDistanceToNow(new Date(conv.last_message_time), { addSuffix: true }) : ''}
                           </p>
                         </div>
                       </div>
@@ -244,35 +296,34 @@ export default function Messages() {
             </ScrollArea>
           </div>
 
-          {/* Chat window */}
-          <div className="md:col-span-2 rounded-2xl border border-border bg-card overflow-hidden flex flex-col shadow-sm">
+          <div className="lg:col-span-2 rounded-3xl border border-border bg-card overflow-hidden flex flex-col shadow-sm relative">
             {selectedUserId ? (
               <>
                 <div
                   className="px-5 py-4 border-b border-border flex items-center gap-3"
                   style={{ background: 'linear-gradient(135deg, hsl(var(--muted) / 0.05), hsl(var(--muted) / 0.02))' }}
                 >
-                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${avatarGradient(displayLetter)} flex items-center justify-center text-white font-bold shadow-sm`}>
+                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${avatarGradient(displayLetter)} flex items-center justify-center text-white font-bold text-xl shadow-sm border-2 border-white ring-2 ring-primary/10`}>
                     {displayLetter}
                   </div>
                   <div>
-                    <h3 className="font-black text-foreground">{displayUsername}</h3>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse inline-block" />
+                    <h3 className="font-bold text-foreground text-lg tracking-tight">{displayUsername}</h3>
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5 mt-0.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
                       Active Connection
                     </span>
                   </div>
                 </div>
 
-                <ScrollArea className="flex-1 p-5">
-                  <div className="space-y-3">
+                <div className="flex-1 overflow-y-auto p-5 compassionate-bg rounded-b-3xl">
+                  <div className="space-y-4 relative z-10">
                     {messages.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-16 text-center">
                         <div className="w-20 h-20 rounded-full overflow-hidden mb-4 shadow-md animate-float">
                           <img
                             src="https://images.unsplash.com/photo-1518712391031-6b80f83d09f7?w=100&h=100&fit=crop&auto=format"
                             alt="Start conversation"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                           />
                         </div>
                         <p className="text-muted-foreground">Start a conversation with <span className="font-semibold text-foreground">{displayUsername}</span></p>
@@ -287,12 +338,12 @@ export default function Messages() {
                             style={{ animationDelay: `${Math.min(idx, 5) * 30}ms` }}
                           >
                             <div
-                              className={`max-w-[70%] rounded-2xl px-4 py-2.5 shadow-sm ${isMine
-                                ? 'rounded-br-sm text-white bg-primary'
-                                : 'rounded-bl-sm bg-muted text-foreground'
+                              className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-5 py-3 shadow-sm transition-all animate-message-pop ${isMine
+                                ? 'rounded-br-sm text-white bg-primary shadow-primary/20'
+                                : 'rounded-bl-sm bg-white border border-border/60 text-foreground'
                                 }`}
                             >
-                              <p className={`text-sm leading-relaxed ${isMine ? 'text-white' : 'text-foreground'}`}>
+                              <p className={`text-sm leading-relaxed whitespace-pre-wrap break-words ${isMine ? 'text-white' : 'text-foreground'}`}>
                                 {message.content}
                               </p>
                               <div className={`flex items-center gap-1 mt-1 ${isMine ? 'justify-end' : ''}`}>
@@ -310,7 +361,7 @@ export default function Messages() {
                     )}
                     <div ref={messagesEndRef} />
                   </div>
-                </ScrollArea>
+                </div>
 
                 <div className="p-4 border-t border-border bg-white">
                   <div className="flex gap-2 items-center">
@@ -318,15 +369,15 @@ export default function Messages() {
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Type a message..."
-                      className="flex-1 rounded-2xl pr-4 pl-5 h-12 border-border focus:border-primary focus:ring-primary/20 bg-background"
+                      className="flex-1 rounded-full px-5 h-14 border-border focus:border-primary focus:ring-primary/20 bg-muted/10 shadow-inner"
                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                     />
                     <Button
                       onClick={handleSendMessage}
                       disabled={!newMessage.trim()}
-                      className="w-12 h-12 rounded-2xl p-0 shrink-0 bg-primary text-white shadow-lg shadow-primary/20 disabled:opacity-50 transition-all hover:scale-110 active:scale-95"
+                      className="w-14 h-14 rounded-2xl p-0 shrink-0 bg-primary text-white shadow-xl shadow-primary/20 disabled:opacity-50 transition-all hover:scale-105 active:scale-95 group"
                     >
-                      <Send className="h-4 w-4" />
+                      <Send className="h-5 w-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                     </Button>
                   </div>
                 </div>
@@ -337,7 +388,7 @@ export default function Messages() {
                   <img
                     src="https://images.unsplash.com/photo-1526404423292-15db8c2334e5?w=200&h=200&fit=crop&auto=format"
                     alt="Messages"
-                    className="w-full h-full object-cover opacity-80"
+                    className="w-full h-full object-contain opacity-80"
                   />
                 </div>
                 <div className="flex items-center gap-2 mb-2">

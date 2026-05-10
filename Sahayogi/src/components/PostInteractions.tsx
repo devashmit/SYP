@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { useSocket } from '@/contexts/SocketContext';
 
 const API_URL = 'http://localhost:3000/api';
 
@@ -13,6 +14,7 @@ interface ReactionData {
     counts: { heart: number; care: number; sad: number };
     total: number;
     userReaction: ReactionType | null;
+    users?: { heart: string[], care: string[], sad: string[] };
 }
 
 interface CommentData {
@@ -49,11 +51,13 @@ function avatarGradient(letter: string) {
 
 export default function PostInteractions({ postId }: { postId: string }) {
     const { user } = useAuth();
+    const { socket } = useSocket();
 
     // --- Reaction state ---
     const [reactionData, setReactionData] = useState<ReactionData>({ counts: { heart: 0, care: 0, sad: 0 }, total: 0, userReaction: null });
     const [showReactionPicker, setShowReactionPicker] = useState(false);
     const [reactionAnimating, setReactionAnimating] = useState<ReactionType | null>(null);
+    const [commentCount, setCommentCount] = useState(0);
     const reactionTimeout = useRef<NodeJS.Timeout | null>(null);
     const reactionRef = useRef<HTMLDivElement>(null);
 
@@ -79,6 +83,39 @@ export default function PostInteractions({ postId }: { postId: string }) {
         fetchReactions();
     }, [postId]);
 
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleReactionUpdated = (data: any) => {
+            if (data.postId === postId) {
+                setReactionData(prev => ({
+                    ...prev,
+                    counts: data.counts,
+                    users: data.users,
+                    total: data.total
+                }));
+            }
+        };
+
+        const handleCommentCreated = (data: { postId: string, comment: any }) => {
+            if (data.postId === postId) {
+                setComments(prev => {
+                    if (prev.some(c => c.id === data.comment.id)) return prev;
+                    return [data.comment, ...prev];
+                });
+                setCommentCount(prev => prev + 1);
+            }
+        };
+
+        socket.on('reaction_updated', handleReactionUpdated);
+        socket.on('comment_created', handleCommentCreated);
+
+        return () => {
+            socket.off('reaction_updated', handleReactionUpdated);
+            socket.off('comment_created', handleCommentCreated);
+        };
+    }, [socket, postId]);
+
     const fetchReactions = async () => {
         try {
             const headers: Record<string, string> = {};
@@ -87,6 +124,7 @@ export default function PostInteractions({ postId }: { postId: string }) {
             if (res.ok) {
                 const data = await res.json();
                 setReactionData(data);
+                if (data.commentCount !== undefined) setCommentCount(data.commentCount);
             }
         } catch { /* silent */ }
     };
@@ -128,7 +166,7 @@ export default function PostInteractions({ postId }: { postId: string }) {
                 const data = await res.json();
                 setReactionData(data);
             }
-        } catch { /* silent — optimistic stays */ }
+        } catch { /* silent - optimistic stays */ }
     };
 
     const handleReactionHover = () => {
@@ -230,9 +268,9 @@ export default function PostInteractions({ postId }: { postId: string }) {
             {reactionData.total > 0 && (
                 <div className="pi-summary">
                     <div className="pi-summary-emojis">
-                        {reactionData.counts.heart > 0 && <span className="pi-mini-emoji" title={`${reactionData.counts.heart} Love`}>❤️</span>}
-                        {reactionData.counts.care > 0 && <span className="pi-mini-emoji" title={`${reactionData.counts.care} Care`}>🤗</span>}
-                        {reactionData.counts.sad > 0 && <span className="pi-mini-emoji" title={`${reactionData.counts.sad} Sad`}>😢</span>}
+                        {reactionData.counts.heart > 0 && <span className="pi-mini-emoji" title={reactionData.users?.heart?.length ? `${reactionData.counts.heart} Love (${reactionData.users.heart.join(', ')})` : `${reactionData.counts.heart} Love`}>❤️</span>}
+                        {reactionData.counts.care > 0 && <span className="pi-mini-emoji" title={reactionData.users?.care?.length ? `${reactionData.counts.care} Care (${reactionData.users.care.join(', ')})` : `${reactionData.counts.care} Care`}>🤗</span>}
+                        {reactionData.counts.sad > 0 && <span className="pi-mini-emoji" title={reactionData.users?.sad?.length ? `${reactionData.counts.sad} Sad (${reactionData.users.sad.join(', ')})` : `${reactionData.counts.sad} Sad`}>😢</span>}
                     </div>
                     <span className="pi-summary-count">{reactionData.total}</span>
                 </div>
@@ -294,7 +332,7 @@ export default function PostInteractions({ postId }: { postId: string }) {
                 >
                     <MessageCircle className="pi-icon" />
                     <span>Comment</span>
-                    {comments.length > 0 && <span className="pi-badge">{comments.length}</span>}
+                    {commentCount > 0 && <span className="pi-badge">{commentCount}</span>}
                 </button>
 
                 {/* Share button */}
@@ -345,7 +383,7 @@ export default function PostInteractions({ postId }: { postId: string }) {
                                         >
                                             <div className={`pi-share-avatar bg-gradient-to-br ${avatarGradient(u.username[0]?.toUpperCase() || 'A')}`}>
                                                 {u.avatar_url
-                                                    ? <img src={u.avatar_url} alt={u.username} className="w-full h-full object-cover rounded-full" />
+                                                    ? <img src={u.avatar_url} alt={u.username} className="w-full h-full object-contain rounded-full" />
                                                     : u.username[0]?.toUpperCase()
                                                 }
                                             </div>
@@ -404,7 +442,7 @@ export default function PostInteractions({ postId }: { postId: string }) {
                             <div className="pi-comment-skeleton" />
                         </div>
                     ) : comments.length === 0 ? (
-                        <p className="pi-no-comments">No comments yet — be the first!</p>
+                        <p className="pi-no-comments">No comments yet - be the first!</p>
                     ) : (
                         <div className="pi-comment-list">
                             {comments.slice(0, 3).map(c => {

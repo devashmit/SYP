@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const prisma = require('../prisma/client');
 const authenticateToken = require('../middleware/auth.middleware');
 const isAdmin = require('../middleware/admin.middleware');
+const notificationService = require('../services/notification.service');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'sahayogi_secret_key_2024';
 
@@ -53,11 +54,17 @@ module.exports = function createPostsRouter(io) {
     // POST /api/posts
     router.post('/', authenticateToken, async (req, res) => {
         try {
-            const { title, description, help_type, location, images, is_anonymous, category_id } = req.body;
+            const { title, description, help_type, intent, location, images, is_anonymous, category_id } = req.body;
+
+            const postIntent = intent || (help_type === 'offering' ? 'OFFER_HELP' : 'ASK_HELP');
+            if (!postIntent || !['OFFER_HELP', 'ASK_HELP'].includes(postIntent)) {
+                return res.status(400).json({ error: 'intent is required and must be either OFFER_HELP or ASK_HELP' });
+            }
+
             const post = await prisma.post.create({
                 data: {
-                    title, description, help_type, location, images, is_anonymous,
-                    status: 'pending',
+                    title, description, help_type, intent: postIntent, location, images, is_anonymous,
+                    status: req.user.role === 'admin' ? 'available' : 'pending',
                     user_id: req.user.id,
                     category_id: parseInt(category_id)
                 }
@@ -73,16 +80,21 @@ module.exports = function createPostsRouter(io) {
 
             const finalPost = { ...postWithIncludes, profiles: postWithIncludes.user, categories: postWithIncludes.category };
 
+            // Emit to admins if pending
+            if (post.status === 'pending') {
+                io.to('admin_room').emit('post_pending', finalPost);
+            }
+
             // Notify admins of pending post
             const admins = await prisma.profile.findMany({ where: { role: 'admin' }, select: { id: true } });
-            const adminNotifications = admins.map(a => ({
-                user_id: a.id, type: 'pending_post',
-                message: `New post pending approval: "${post.title}"`, post_id: post.id
-            }));
-            if (adminNotifications.length > 0) {
-                await prisma.notification.createMany({ data: adminNotifications });
-                admins.forEach(a => io.to(a.id).emit('notification_received'));
-            }
+            admins.forEach(a => {
+                notificationService.queue({
+                    userId: a.id,
+                    type: 'POST_CREATED',
+                    message: `New post created: "${post.title}"`,
+                    relatedEntityId: post.id
+                });
+            });
 
             res.json(finalPost);
         } catch (error) {
@@ -130,13 +142,12 @@ module.exports = function createPostsRouter(io) {
             io.emit('post_updated', finalPost);
 
             if (req.user.id !== updatedPost.user_id) {
-                await prisma.notification.create({
-                    data: {
-                        user_id: updatedPost.user_id, type: 'post_updated',
-                        message: `Your post "${updatedPost.title}" was updated by an admin.`, post_id: updatedPost.id
-                    }
+                notificationService.queue({
+                    userId: updatedPost.user_id,
+                    type: 'SYSTEM',
+                    message: `Your post "${updatedPost.title}" was updated by an admin.`,
+                    relatedEntityId: updatedPost.id
                 });
-                io.to(updatedPost.user_id).emit('notification_received');
             }
 
             res.json(finalPost);
@@ -180,9 +191,23 @@ module.exports = function createPostsRouter(io) {
         try {
             const { content } = req.body;
             const comment = await prisma.comment.create({
-                data: { content, post_id: req.params.id, user_id: req.user.id }
+                data: { content, post_id: req.params.id, user_id: req.user.id },
+                include: { user: { select: { username: true } }, post: { select: { user_id: true, title: true } } }
             });
-            res.json(comment);
+            const finalComment = { ...comment, profiles: comment.user };
+            io.emit('comment_created', { postId: req.params.id, comment: finalComment });
+            
+            // Notify post owner if it's someone else commenting
+            if (comment.post.user_id !== req.user.id) {
+                notificationService.queue({
+                    userId: comment.post.user_id,
+                    type: 'SYSTEM',
+                    message: `${comment.user.username} commented on "${comment.post.title}"`,
+                    relatedEntityId: req.params.id
+                });
+            }
+            
+            res.json(finalComment);
         } catch (error) {
             res.status(400).json({ error: error.message });
         }
@@ -192,11 +217,23 @@ module.exports = function createPostsRouter(io) {
     router.get('/:id/reactions', async (req, res) => {
         try {
             const postId = req.params.id;
-            const counts = await prisma.reaction.groupBy({
-                by: ['type'], where: { post_id: postId }, _count: true
+            const reactions = await prisma.reaction.findMany({
+                where: { post_id: postId },
+                include: { user: { select: { username: true } } }
             });
+
             const summary = { heart: 0, care: 0, sad: 0 };
-            counts.forEach(c => { summary[c.type] = c._count; });
+            const users = { heart: [], care: [], sad: [] };
+
+            reactions.forEach(r => {
+                const type = r.type;
+                if (summary[type] !== undefined) {
+                    summary[type]++;
+                    if (r.user && r.user.username) {
+                        users[type].push(r.user.username);
+                    }
+                }
+            });
 
             let userReaction = null;
             const authHeader = req.headers['authorization'];
@@ -204,14 +241,16 @@ module.exports = function createPostsRouter(io) {
             if (token) {
                 try {
                     const decoded = jwt.verify(token, JWT_SECRET);
-                    const existing = await prisma.reaction.findUnique({
-                        where: { post_id_user_id: { post_id: postId, user_id: decoded.id } }
-                    });
+                    const existing = reactions.find(r => r.user_id === decoded.id);
                     if (existing) userReaction = existing.type;
                 } catch { /* ignore */ }
             }
 
-            res.json({ counts: summary, total: summary.heart + summary.care + summary.sad, userReaction });
+            const commentCount = await prisma.comment.count({
+                where: { post_id: postId }
+            });
+
+            res.json({ counts: summary, users, total: reactions.length, userReaction, commentCount });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -238,17 +277,44 @@ module.exports = function createPostsRouter(io) {
                 await prisma.reaction.create({ data: { type, post_id: postId, user_id: req.user.id } });
             }
 
-            const counts = await prisma.reaction.groupBy({
-                by: ['type'], where: { post_id: postId }, _count: true
+            const reactions = await prisma.reaction.findMany({
+                where: { post_id: postId },
+                include: { user: { select: { username: true } } }
             });
+
             const summary = { heart: 0, care: 0, sad: 0 };
-            counts.forEach(c => { summary[c.type] = c._count; });
+            const users = { heart: [], care: [], sad: [] };
 
-            const userReaction = await prisma.reaction.findUnique({
-                where: { post_id_user_id: { post_id: postId, user_id: req.user.id } }
+            reactions.forEach(r => {
+                const t = r.type;
+                if (summary[t] !== undefined) {
+                    summary[t]++;
+                    if (r.user && r.user.username) {
+                        users[t].push(r.user.username);
+                    }
+                }
             });
 
-            res.json({ counts: summary, total: summary.heart + summary.care + summary.sad, userReaction: userReaction?.type || null });
+            // Notify post owner if it's a new reaction from someone else
+            if (!existing) {
+                const post = await prisma.post.findUnique({ where: { id: postId }, select: { user_id: true, title: true } });
+                const reactor = await prisma.profile.findUnique({ where: { id: req.user.id }, select: { username: true } });
+                if (post && post.user_id !== req.user.id) {
+                    notificationService.queue({
+                        userId: post.user_id,
+                        type: 'SYSTEM',
+                        message: `${reactor.username} reacted to "${post.title}"`,
+                        relatedEntityId: postId
+                    });
+                }
+            }
+
+            const userReaction = reactions.find(r => r.user_id === req.user.id);
+            const responseData = { counts: summary, users, total: reactions.length, userReaction: userReaction?.type || null };
+
+            io.emit('reaction_updated', { postId, ...responseData });
+
+            res.json(responseData);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -259,22 +325,28 @@ module.exports = function createPostsRouter(io) {
         try {
             const { user_id } = req.body;
             const postId = req.params.id;
-            const post = await prisma.post.findUnique({ where: { id: postId }, select: { title: true } });
+            const post = await prisma.post.findUnique({ where: { id: postId }, select: { title: true, user_id: true } });
             if (!post) return res.status(404).json({ error: 'Post not found' });
 
-            await prisma.message.create({
+            const sharedMessage = await prisma.message.create({
                 data: {
                     sender_id: req.user.id, receiver_id: user_id,
                     content: `📌 Shared a post with you: "${post.title}" — /post/${postId}`
                 }
             });
-            await prisma.notification.create({
-                data: {
-                    user_id: user_id, type: 'post_shared',
-                    message: `Someone shared "${post.title}" with you`, post_id: postId
-                }
-            });
-            io.to(user_id).emit('notification_received');
+            io.to(user_id).emit('receive_message', sharedMessage);
+            io.to(req.user.id).emit('receive_message', sharedMessage);
+            
+            // Notify the owner of the post that someone shared their post
+            if (post.user_id !== req.user.id) {
+                notificationService.queue({
+                    userId: post.user_id,
+                    type: 'POST_SHARED',
+                    message: `Someone shared your post "${post.title}"`,
+                    relatedEntityId: postId
+                });
+            }
+            
             res.json({ success: true });
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -295,6 +367,36 @@ module.exports = function createPostsRouter(io) {
         }
     });
 
+    // GET /api/posts/history (mounted at /api level in index.js)
+    router.get('/history', authenticateToken, async (req, res) => {
+        try {
+            const userId = req.user.id;
+
+            // Find posts where user reacted OR commented
+            const historyPosts = await prisma.post.findMany({
+                where: {
+                    OR: [
+                        { reactions: { some: { user_id: userId } } },
+                        { comments: { some: { user_id: userId } } }
+                    ]
+                },
+                include: {
+                    user: { select: { username: true } },
+                    category: { select: { name: true } }
+                },
+                orderBy: { created_at: 'desc' }
+            });
+
+            res.json(historyPosts.map(p => ({
+                ...p,
+                profiles: p.user,
+                categories: p.category
+            })));
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+
     // POST /api/community-needs
     router.post('/community-needs', authenticateToken, async (req, res) => {
         try {
@@ -305,6 +407,7 @@ module.exports = function createPostsRouter(io) {
             const post = await prisma.post.create({
                 data: {
                     title, description, help_type: help_type || 'request',
+                    intent: 'ASK_HELP', // community needs are requests by default
                     post_type: 'community_need', location, images: images || [],
                     is_anonymous: is_anonymous || false, status: 'available',
                     user_id: req.user.id, category_id: parseInt(category_id)
@@ -319,14 +422,14 @@ module.exports = function createPostsRouter(io) {
             io.emit('post_created', finalPost);
 
             const allUsers = await prisma.profile.findMany({ where: { id: { not: req.user.id } }, select: { id: true } });
-            const notificationData = allUsers.map(u => ({
-                user_id: u.id, type: 'new_post',
-                message: `New Community Need: "${post.title}"`, post_id: post.id
-            }));
-            if (notificationData.length > 0) {
-                await prisma.notification.createMany({ data: notificationData });
-                allUsers.forEach(u => io.to(u.id).emit('notification_received'));
-            }
+            allUsers.forEach(u => {
+                notificationService.queue({
+                    userId: u.id,
+                    type: 'POST_CREATED',
+                    message: `New Community Need: "${post.title}"`,
+                    relatedEntityId: post.id
+                });
+            });
 
             res.json(finalPost);
         } catch (error) {

@@ -21,6 +21,7 @@ import {
 import { Link } from 'react-router-dom';
 import PostCard from '@/components/PostCard';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSocket } from '@/contexts/SocketContext';
 
 interface Post {
   id: string;
@@ -40,6 +41,7 @@ const API_URL = 'http://localhost:3000/api';
 
 const Browse = () => {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -51,6 +53,31 @@ const Browse = () => {
     fetchPosts();
     return () => { mountedRef.current = false; };
   }, [selectedCategory]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handlePostCreated = (newPost: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (newPost.post_type !== 'user_post' || newPost.status !== 'available') return;
+      if (selectedCategory !== 'all' && newPost.categories?.name !== selectedCategory) return;
+      
+      setPosts(prev => {
+        if (prev.some(p => p.id === newPost.id)) return prev;
+        return [newPost, ...prev];
+      });
+    };
+
+    const handlePostDeleted = (deletedId: string) => {
+      setPosts(prev => prev.filter(p => p.id !== deletedId));
+    };
+
+    socket.on('post_created', handlePostCreated);
+    socket.on('post_deleted', handlePostDeleted);
+    
+    return () => {
+      socket.off('post_created', handlePostCreated);
+      socket.off('post_deleted', handlePostDeleted);
+    };
+  }, [socket, selectedCategory]);
 
   const fetchCategories = async () => {
     try {
@@ -67,7 +94,7 @@ const Browse = () => {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/posts?category=${selectedCategory}`);
+      const res = await fetch(`${API_URL}/posts?type=user_post&category=${selectedCategory}`);
       if (res.ok) {
         const data = await res.json();
         if (mountedRef.current) setPosts(data || []);
@@ -84,7 +111,7 @@ const Browse = () => {
       <Navbar />
 
       {/* Hero Header */}
-      <div className="w-full relative h-44 overflow-hidden mandala-bg grain-overlay">
+      <div className="w-full relative min-h-[176px] h-auto overflow-hidden mandala-bg grain-overlay">
         <div className="vignette-top" />
         <img
           src="/images/hero/boudhanath-stupa-in-kathmandu-nepal.webp"
@@ -93,13 +120,15 @@ const Browse = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background/98 via-background/85 to-background/40" />
         <div className="absolute inset-0 flex items-center">
-          <div className="container mx-auto px-5 max-w-5xl">
-            <span className="text-[10px] font-semibold text-primary/80 uppercase tracking-wider mb-1 block">Community feed</span>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight leading-tight mb-1">Browse Causes</h1>
-            <p className="text-xs text-muted-foreground max-w-xs">
-              Verified donations and requests from communities across Nepal.
-            </p>
-          </div>
+            <div className="container mx-auto px-5 max-w-5xl">
+              <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-2 block bg-primary/5 w-fit px-2 py-0.5 rounded-full">Community Archive</span>
+              <h1 className="text-4xl lg:text-5xl font-extrabold text-foreground tracking-tighter leading-tight mb-2">
+                Browse <span className="gradient-text">Causes</span>
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-xs sm:max-w-sm font-medium leading-relaxed border-l-2 border-primary/20 pl-3">
+                Verified donations and <span className="italic font-serif text-primary/80">proven impact</span> from communities across Nepal.
+              </p>
+            </div>
         </div>
       </div>
 
@@ -261,9 +290,9 @@ const Browse = () => {
               </h3>
               <div className="space-y-2.5">
                 {[
-                  { label: 'Clothes drive — Bhaktapur', count: 12, icon: Users },
-                  { label: 'School books — Pokhara', count: 8, icon: BookOpen },
-                  { label: 'Winter aid — Sindhupalchok', count: 34, icon: Heart },
+                  { label: 'Clothes drive - Bhaktapur', count: 12, icon: Users },
+                  { label: 'School books - Pokhara', count: 8, icon: BookOpen },
+                  { label: 'Winter aid - Sindhupalchok', count: 34, icon: Heart },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">

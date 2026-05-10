@@ -20,7 +20,7 @@ const timeAgo = (iso: string) => {
     return `${d}d ago`;
 };
 
-const NeedCard = ({ post, index }: { post: any; index: number }) => {
+const NeedCard = ({ post, index }: { post: any; index: number }) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     const [imgLoaded, setImgLoaded] = useState(false);
 
     return (
@@ -95,7 +95,7 @@ const NeedCard = ({ post, index }: { post: any; index: number }) => {
 };
 
 const CommunityNeeds = () => {
-    const [posts, setPosts] = useState<any[]>([]);
+    const [posts, setPosts] = useState<any[]>([]); // eslint-disable-line @typescript-eslint/no-explicit-any
     const [loading, setLoading] = useState(true);
     const { socket } = useSocket();
     const { user } = useAuth();
@@ -147,7 +147,7 @@ const CommunityNeeds = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#fcfcfd]">
+        <div className="min-h-screen bg-background">
             <Navbar />
 
             {/* Back Button */}
@@ -162,22 +162,22 @@ const CommunityNeeds = () => {
                     <img
                         src={childrenImg}
                         alt=""
-                        className="w-full h-full object-cover object-center opacity-30 mix-blend-multiply animate-[slow-zoom_35s_infinite_alternate]"
+                        className="w-full h-full object-contain object-center opacity-30 mix-blend-multiply animate-[slow-zoom_35s_infinite_alternate]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-[#fcfcfd]" />
                 </div>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(244,63,94,0.03),transparent)]" />
                 <div className="container mx-auto px-5 max-w-5xl relative">
                     <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 border border-rose-100 mb-6 animate-fade-in">
-                            <Sparkles className="w-3.5 h-3.5 text-rose-500" />
-                            <span className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">Sahayogi Direct Impact</span>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 mb-6 animate-fade-in group cursor-default">
+                            <Sparkles className="w-3.5 h-3.5 text-primary group-hover:rotate-12 transition-transform" />
+                            <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">Sahayogi Direct Impact</span>
                         </div>
-                        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground mb-4 animate-slide-up">
-                            Community <span className="text-rose-500">Needs</span>
+                        <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tighter text-foreground mb-4 animate-slide-up leading-[1.1]">
+                            Community <span className="gemini-gradient">Needs</span>
                         </h1>
-                        <p className="text-base sm:text-lg text-muted-foreground leading-relaxed animate-slide-up animation-delay-100">
-                            Verified, high-impact requests from families and groups in need across Nepal. Every contribution here makes a direct difference.
+                        <p className="text-base sm:text-lg text-muted-foreground leading-relaxed animate-slide-up animation-delay-100 font-medium">
+                            Verified, <span className="italic font-serif text-primary/80">high-impact</span> requests from families and groups in need across Nepal. Every contribution here makes a direct difference.
                         </p>
                     </div>
                 </div>

@@ -46,7 +46,7 @@ const ImpactStrip = () => {
       <div className="absolute inset-0 opacity-[0.03]"
         style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
 
-      <div className="container mx-auto px-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-white relative z-10">
+      <div className="container mx-auto px-4 grid grid-cols-2 sm:grid-cols-4 items-center justify-items-center gap-x-6 gap-y-6 text-white relative z-10">
         {stats.map((s, i) => {
           const Icon = s.icon;
           return (

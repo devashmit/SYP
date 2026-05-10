@@ -159,7 +159,7 @@ export default function PostDetail() {
             <img
               src="https://images.unsplash.com/photo-1544254254-8e434f0f0894?w=200&h=200&fit=crop&auto=format"
               alt="Post not found"
-              className="w-full h-full object-cover opacity-50"
+              className="w-full h-full object-contain opacity-50"
             />
           </div>
           <div className="flex items-center gap-2 justify-center mb-2">
@@ -209,7 +209,7 @@ export default function PostDetail() {
                       <img
                         src={imageUrl}
                         alt={`Post image ${index + 1}`}
-                        className={`w-full object-cover transition-transform duration-500 group-hover:scale-105 ${post.images.length === 1 ? 'max-h-80' : 'h-40'}`}
+                        className={`w-full object-contain transition-transform duration-500 group-hover:scale-105 ${post.images.length === 1 ? 'max-h-80' : 'h-40'}`}
                       />
                     </div>
                   ))}
@@ -303,7 +303,7 @@ export default function PostDetail() {
                     <img
                       src="https://images.unsplash.com/photo-1544254254-8e434f0f0894?w=80&h=80&fit=crop&auto=format"
                       alt="Login"
-                      className="w-full h-full object-cover opacity-80"
+                      className="w-full h-full object-contain opacity-80"
                     />
                   </div>
                   <div className="text-left">
@@ -326,7 +326,7 @@ export default function PostDetail() {
                     <img
                       src="https://images.unsplash.com/photo-1518712391031-6b80f83d09f7?w=100&h=100&fit=crop&auto=format"
                       alt="No comments yet"
-                      className="w-full h-full object-cover opacity-50"
+                      className="w-full h-full object-contain opacity-50"
                     />
                   </div>
                   <p className="text-muted-foreground">No comments yet. Be the first to comment!</p>

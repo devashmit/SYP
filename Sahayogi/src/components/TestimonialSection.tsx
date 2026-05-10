@@ -12,13 +12,13 @@ import riwajImg from '@/assets/riwaj.png';
 
 const testimonials = [
     {
-        quote: 'Someone nearby needed books for school. Within hours, the community responded.',
+        quote: 'वरपर कसैलाई विद्यालयका लागि पुस्तकहरू चाहिएको थियो। केही घण्टामै समुदायले प्रतिक्रिया दियो।',
         name: 'Sujit Shaha',
         city: 'Kathmandu',
         photo: sujitImg,
     },
     {
-        quote: 'What I couldn\'t solve alone, Sahayogi helped me solve together.',
+        quote: 'मैले एक्लै समाधान गर्न नसकेको कुरा, सहयोगीले हामीलाई सँगै मिलेर समाधान गर्न मद्दत गर्यो।',
         name: 'Sameer Jung Thapa',
         city: 'Pokhara',
         photo: sameerImg,
@@ -36,7 +36,7 @@ const testimonials = [
         photo: supriyaImg,
     },
     {
-        quote: 'I found a verified oxygen cylinder donor within 20 minutes during the emergency.',
+        quote: 'आपतकालीन अवस्थामा मैले २० मिनेटभित्रै प्रमाणित अक्सिजन सिलिन्डर दाता फेला पारेँ।',
         name: 'Ujjwal Rupakheti',
         city: 'Dharan',
         photo: ujjwalImg,
@@ -55,7 +55,7 @@ const allAvatars = [
     ujjwalImg, pritamImg, nischalImg, riwajImg,
 ];
 
-// Positions: 4 left side, 4 right side — precise layout matching reference
+// Positions: 4 left side, 4 right side - precise layout matching reference
 const leftAvatars = [
     { img: sujitImg, size: 72, x: '5%', y: '12%', delay: 0 },
     { img: sameerImg, size: 56, x: '14%', y: '38%', delay: 1.2 },
@@ -100,7 +100,7 @@ const TestimonialSection = () => {
 
     return (
         <section
-            className="relative overflow-hidden min-h-screen lg:min-h-[700px] flex items-center justify-center"
+            className="relative overflow-hidden min-h-[500px] lg:min-h-[700px] flex items-center justify-center"
             style={{
                 background: 'linear-gradient(160deg, #fdfaf6 0%, #fef9f2 60%, #fdf6ee 100%)',
             }}
@@ -116,7 +116,7 @@ const TestimonialSection = () => {
                 ))}
             </div>
 
-            {/* Floating Avatars — desktop only */}
+            {/* Floating Avatars - desktop only */}
             <div className="hidden lg:block absolute inset-0 pointer-events-none">
                 {[...leftAvatars, ...rightAvatars].map((ava, i) => (
                     <div
@@ -134,7 +134,7 @@ const TestimonialSection = () => {
                             opacity: 0.6,
                         }}
                     >
-                        <img src={ava.img} alt="" className="w-full h-full object-cover" />
+                        <img src={ava.img} alt="" className="w-full h-full object-contain" />
                     </div>
                 ))}
             </div>
@@ -142,7 +142,7 @@ const TestimonialSection = () => {
 
             {/* Center content block */}
             <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 sm:px-6 py-12 lg:py-24">
-                {/* Mobile: avatar row — centered above content */}
+                {/* Mobile: avatar row - centered above content */}
                 <div className="flex lg:hidden items-center justify-center mb-6">
                     <div className="flex gap-2 sm:gap-3">
                         {allAvatars.slice(0, 4).map((img, i) => (
@@ -151,7 +151,7 @@ const TestimonialSection = () => {
                                 className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border-2 border-white shadow-md"
                                 style={{ opacity: 0.85 }}
                             >
-                                <img src={img} alt="Community member" className="w-full h-full object-cover" />
+                                <img src={img} alt="Community member" className="w-full h-full object-contain" />
                             </div>
                         ))}
                     </div>
@@ -190,9 +190,9 @@ const TestimonialSection = () => {
                         maxWidth: '600px',
                     }}
                 >
-                    Trusted by communities
+                    नेपालभरिका विभिन्न
                     <br />
-                    <span style={{ color: '#b22826' }}>across Nepal</span>
+                    <span style={{ color: '#b22826' }}>समुदायको विश्वास</span>
                 </h2>
 
                 {/* Supporting text */}
@@ -206,8 +206,7 @@ const TestimonialSection = () => {
                         fontWeight: 450,
                     }}
                 >
-                    Real people helping each other through verified requests,
-                    shared resources, and community trust.
+                    प्रमाणित अनुरोधहरू, साझा स्रोतहरू, र सामुदायिक विश्वासको माध्यमबाट एकअर्कालाई मद्दत गर्ने वास्तविक मानिसहरू।
                 </p>
 
                 {/* Testimonial card */}
@@ -233,7 +232,7 @@ const TestimonialSection = () => {
                                     boxShadow: '0 8px 28px rgba(0,0,0,0.13)',
                                 }}
                             >
-                                <img src={t.photo} alt={t.name} className="w-full h-full object-cover" />
+                                <img src={t.photo} alt={t.name} className="w-full h-full object-contain" />
                             </div>
                         </div>
 
