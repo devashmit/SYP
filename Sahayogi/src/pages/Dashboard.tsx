@@ -23,8 +23,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import PostCard from '@/components/PostCard';
 import { UpcomingDrives } from '@/components/UpcomingDrives';
-
-const API_URL = 'http://localhost:3000/api';
+import { API_URL } from '@/config';
 
 const Dashboard = () => {
     const { user } = useAuth();
@@ -145,7 +144,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Stat Cards - Secondary (Optional, keeping them but tighter) */}
-                <div className="grid grid-cols-3 gap-3 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
                     {statCards.map((stat) => {
                         const Icon = stat.icon;
                         return (

@@ -13,8 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSocket } from '@/contexts/SocketContext';
 import { Badge } from '@/components/ui/badge';
 import BackButton from '@/components/BackButton';
-
-const API_URL = 'http://localhost:3000/api';
+import { API_URL } from '@/config';
 
 /* ─── Tab config ──────────────────────────────────────────────────────── */
 const TABS = [
@@ -27,8 +26,6 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
-
-const SORT_OPTIONS = [
     { value: 'newest', label: 'Newest first' },
     { value: 'urgent', label: 'Urgent needs' },
 ];
@@ -43,6 +40,7 @@ const EMPTY_STATES: Record<TabId, { icon: React.ElementType; title: string; body
 };
 
 import FeedHero from '@/components/FeedHero';
+import { API_URL } from '@/config';
 
 const Feed = () => {
     const { user } = useAuth();

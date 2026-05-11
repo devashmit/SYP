@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Menu, X, LayoutGrid, PlusCircle, MessageCircle,
+  Menu, X, PlusCircle, MessageCircle,
   LogOut, LogIn, UserPlus, User, LayoutDashboard,
   ShieldCheck, Rss, Heart
 } from 'lucide-react';
@@ -9,8 +9,9 @@ import { NotificationsDropdown } from '@/components/NotificationsDropdown';
 import { useState, useEffect } from 'react';
 import sahayogiLogo from '@/assets/Logo.svg';
 import { useSocket } from '@/contexts/SocketContext';
+import { API_URL } from '@/config';
 
-const guestLinks: { to: string, label: string, icon: any }[] = [];
+const guestLinks: { to: string; label: string; icon: any }[] = [];
 
 const userLinks = [
   { to: '/feed', label: 'Feed', icon: Rss },
@@ -35,15 +36,12 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { socket } = useSocket();
 
-  // Must call all hooks BEFORE any early return (React rule)
+  // All hooks must be called before any conditional return
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  /* Hide navbar on all /auth/* pages */
-  if (location.pathname.startsWith('/auth')) return null;
 
   const isAuthenticated = authStatus === 'authenticated';
 
@@ -53,26 +51,32 @@ const Navbar = () => {
     const fetchUnread = async () => {
       try {
         const token = sessionStorage.getItem('sahayogi_token');
-        const res = await fetch('http://localhost:3000/api/messages/conversations', {
-          headers: { Authorization: `Bearer ${token}` }
+        const res = await fetch(`${API_URL}/messages/conversations`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
           const convos = await res.json();
           const total = convos.reduce((sum: number, c: any) => sum + c.unread_count, 0);
           setUnreadMessageCount(total);
         }
-      } catch (e) { }
+      } catch {
+        // silent
+      }
     };
 
     fetchUnread();
 
     if (socket) {
       socket.on('receive_message', fetchUnread);
-      return () => { socket.off('receive_message', fetchUnread); };
+      return () => {
+        socket.off('receive_message', fetchUnread);
+      };
     }
   }, [isAuthenticated, user, socket]);
 
-  /* Pick the correct link set - NEVER mix user + admin */
+  // Hide navbar on all /auth/* pages — after all hooks
+  if (location.pathname.startsWith('/auth')) return null;
+
   const links = isAuthenticated ? (isAdmin ? adminLinks : userLinks) : guestLinks;
 
   const handleSignOut = async () => {
@@ -82,12 +86,13 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-5 left-1/2 -translate-x-1/2 z-[100] w-[94%] max-w-[1280px] transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${scrolled
-        ? 'bg-white/92 backdrop-blur-2xl shadow-[0_8px_40px_rgba(0,0,0,0.08)] border-border/50'
-        : 'bg-white/75 backdrop-blur-xl border-border/30'
-        } border rounded-2xl px-5 py-3 flex items-center justify-between`}
+      className={`fixed top-5 left-1/2 -translate-x-1/2 z-[100] w-[94%] max-w-[1280px] transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${
+        scrolled
+          ? 'bg-white/92 backdrop-blur-2xl shadow-[0_8px_40px_rgba(0,0,0,0.08)] border-border/50'
+          : 'bg-white/75 backdrop-blur-xl border-border/30'
+      } border rounded-2xl px-5 py-3 flex items-center justify-between`}
     >
-      {/* ── Branding ────────────────────────────────────────────────── */}
+      {/* Branding */}
       <Link
         to={isAuthenticated ? (isAdmin ? '/admin/dashboard' : '/feed') : '/'}
         className="flex items-center gap-2.5 group"
@@ -104,7 +109,7 @@ const Navbar = () => {
         </span>
       </Link>
 
-      {/* ── Desktop nav links ────────────────────────────────────────── */}
+      {/* Desktop nav links */}
       <div className="hidden md:flex items-center gap-0.5 bg-muted/40 p-1 rounded-xl border border-border/30">
         {links.map(({ to, label, icon: Icon }) => {
           const active = location.pathname === to || location.pathname.startsWith(to + '/');
@@ -112,10 +117,11 @@ const Navbar = () => {
             <Link
               key={to}
               to={to}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative ${active
-                ? 'bg-white text-foreground shadow-sm border border-border/40'
-                : 'text-muted-foreground hover:text-foreground hover:bg-white/60'
-                }`}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative ${
+                active
+                  ? 'bg-white text-foreground shadow-sm border border-border/40'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-white/60'
+              }`}
             >
               <Icon className={`w-4 h-4 ${active ? 'text-primary' : ''}`} />
               {label}
@@ -129,12 +135,11 @@ const Navbar = () => {
         })}
       </div>
 
-      {/* ── Action area ─────────────────────────────────────────────── */}
+      {/* Action area */}
       <div className="flex items-center gap-2">
         {isAuthenticated ? (
           <div className="flex items-center gap-2">
             <NotificationsDropdown />
-            {/* Avatar + username */}
             <div className="hidden lg:flex items-center gap-2 pr-3 border-r border-border/50">
               <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold uppercase">
                 {user?.username?.[0] || user?.email?.[0] || 'U'}
@@ -148,7 +153,6 @@ const Navbar = () => {
                 </span>
               )}
             </div>
-
             <button
               onClick={handleSignOut}
               className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all"
@@ -184,7 +188,7 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* ── Mobile dropdown ──────────────────────────────────────────── */}
+      {/* Mobile dropdown */}
       {mobileOpen && (
         <div className="absolute top-[calc(100%+0.5rem)] left-0 w-full md:hidden py-4 px-3 space-y-1 rounded-2xl bg-white border border-border shadow-xl animate-in slide-in-from-top-4 duration-200 z-[101]">
           {links.map(({ to, label, icon: Icon }) => {
@@ -193,10 +197,11 @@ const Navbar = () => {
               <Link
                 key={to}
                 to={to}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${active
-                  ? 'bg-primary/8 text-primary border border-primary/10'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                  }`}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                  active
+                    ? 'bg-primary/8 text-primary border border-primary/10'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                }`}
                 onClick={() => setMobileOpen(false)}
               >
                 <Icon className="w-4 h-4" />
@@ -213,21 +218,14 @@ const Navbar = () => {
           <div className="pt-2 mt-2 border-t border-border">
             {isAuthenticated ? (
               <>
-                {/* Mobile user info */}
                 <div className="flex items-center gap-2.5 px-4 py-2 mb-1">
-                  <img
-                    src={sahayogiLogo}
-                    alt="Logo"
-                    className="w-8 h-8 rounded-full object-contain"
-                  />
+                  <img src={sahayogiLogo} alt="Logo" className="w-8 h-8 rounded-full object-contain" />
                   <div>
                     <p className="text-sm font-semibold text-foreground leading-none">
                       {user?.username || 'User'}
                     </p>
                     {isAdmin && (
-                      <p className="text-[10px] text-primary font-bold uppercase mt-0.5">
-                        Admin
-                      </p>
+                      <p className="text-[10px] text-primary font-bold uppercase mt-0.5">Admin</p>
                     )}
                   </div>
                 </div>

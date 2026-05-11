@@ -22,6 +22,7 @@ import { Link } from 'react-router-dom';
 import PostCard from '@/components/PostCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSocket } from '@/contexts/SocketContext';
+import { API_URL } from '@/config';
 
 interface Post {
   id: string;
@@ -36,8 +37,6 @@ interface Post {
   categories: { name: string } | null;
   profiles: { username: string } | null;
 }
-
-const API_URL = 'http://localhost:3000/api';
 
 const Browse = () => {
   const { user } = useAuth();

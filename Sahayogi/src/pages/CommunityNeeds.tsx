@@ -8,8 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import BackButton from '@/components/BackButton';
 import { useAuth } from '@/contexts/AuthContext';
 import childrenImg from '@/assets/Children-sponsorship-program-Picsart-AiImageEnhancer.webp';
-
-const API_URL = 'http://localhost:3000/api';
+import { API_URL } from '@/config';
 
 const timeAgo = (iso: string) => {
     const diff = Date.now() - new Date(iso).getTime();

@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, MapPin, MessageCircle, Send, Clock, User, Tag, Heart, Search, MessageSquare, LogIn } from 'lucide-react';
+import { toast } from 'sonner';
+import {
+  MapPin, MessageCircle, Send, Clock, User, Tag,
+  Heart, Search, MessageSquare, LogIn,
+} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Navbar from '@/components/Navbar';
-import { Link } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
+import { API_URL } from '@/config';
 
 interface Post {
   id: string;
@@ -33,8 +36,6 @@ interface Comment {
   user_id: string;
   profiles: { username: string } | null;
 }
-
-const API_URL = 'http://localhost:3000/api';
 
 function avatarGradient(letter: string) {
   const colors = [
@@ -60,18 +61,19 @@ export default function PostDetail() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (id) { fetchPost(); fetchComments(); }
+    if (id) {
+      fetchPost();
+      fetchComments();
+    }
   }, [id]);
 
   const fetchPost = async () => {
     try {
       const res = await fetch(`${API_URL}/posts/${id}`);
       if (!res.ok) throw new Error('Post not found');
-      const data = await res.json();
-      setPost(data);
-    } catch (error) {
-      console.error('Error fetching post:', error);
-      toast({ title: 'Error', description: 'Failed to load post', variant: 'destructive' });
+      setPost(await res.json());
+    } catch {
+      toast.error('Failed to load post');
     } finally {
       setLoading(false);
     }
@@ -80,57 +82,41 @@ export default function PostDetail() {
   const fetchComments = async () => {
     try {
       const res = await fetch(`${API_URL}/posts/${id}/comments`);
-      if (res.ok) {
-        const data = await res.json();
-        setComments(data || []);
-      }
-    } catch (error) {
-      console.error('Error fetching comments:', error);
+      if (res.ok) setComments((await res.json()) || []);
+    } catch {
+      // silent
     }
   };
 
   const handleSubmitComment = async () => {
-    if (!user) {
-      toast({ title: 'Error', description: 'You must be logged in to comment', variant: 'destructive' });
-      return;
-    }
+    if (!user) { toast.error('You must be logged in to comment'); return; }
     if (!newComment.trim()) return;
     setSubmitting(true);
     try {
       const token = sessionStorage.getItem('sahayogi_token');
       const res = await fetch(`${API_URL}/posts/${id}/comments`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ content: newComment })
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ content: newComment }),
       });
-
       if (res.ok) {
-        toast({ title: 'Comment posted!' });
+        toast.success('Comment posted!');
         setNewComment('');
         fetchComments();
       } else {
-        throw new Error('Failed to post comment');
+        const data = await res.json();
+        toast.error(data.error || 'Failed to post comment');
       }
-    } catch (error: any) {
-      console.error('Error posting comment:', error);
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } catch {
+      toast.error('Failed to post comment');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleContactPoster = async () => {
-    if (!user) {
-      toast({ title: 'Error', description: 'You must be logged in to send messages', variant: 'destructive' });
-      return;
-    }
-    if (post?.user_id === user.id) {
-      toast({ title: 'Error', description: 'You cannot message yourself', variant: 'destructive' });
-      return;
-    }
+  const handleContactPoster = () => {
+    if (!user) { toast.error('You must be logged in to send messages'); return; }
+    if (post?.user_id === user.id) { toast.error('You cannot message yourself'); return; }
     navigate(`/messages?user=${post?.user_id}`);
   };
 
@@ -138,7 +124,7 @@ export default function PostDetail() {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 pt-28 pb-8">
           <div className="max-w-3xl mx-auto space-y-4">
             <div className="h-8 skeleton-shimmer rounded-xl w-1/3" />
             <div className="aspect-video skeleton-shimmer rounded-2xl" />
@@ -154,20 +140,13 @@ export default function PostDetail() {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="container mx-auto px-4 py-24 text-center">
-          <div className="w-24 h-24 mx-auto rounded-full overflow-hidden mb-6 shadow-lg animate-float">
-            <img
-              src="https://images.unsplash.com/photo-1544254254-8e434f0f0894?w=200&h=200&fit=crop&auto=format"
-              alt="Post not found"
-              className="w-full h-full object-contain opacity-50"
-            />
+        <div className="container mx-auto px-4 pt-28 pb-8 text-center">
+          <div className="w-20 h-20 mx-auto rounded-full bg-muted/30 flex items-center justify-center mb-6">
+            <Search className="w-10 h-10 text-muted-foreground/30" />
           </div>
-          <div className="flex items-center gap-2 justify-center mb-2">
-            <Search className="w-5 h-5 text-primary" />
-            <h2 className="text-2xl font-bold">Post not found</h2>
-          </div>
-          <p className="text-muted-foreground mb-6">This post may have been removed or doesn't exist.</p>
-          <Button onClick={() => navigate('/browse')} className="btn-shimmer text-white rounded-full px-8">
+          <h2 className="text-2xl font-bold mb-2">Post not found</h2>
+          <p className="text-muted-foreground mb-6">This post may have been removed or does not exist.</p>
+          <Button onClick={() => navigate('/browse')} className="rounded-full px-8">
             Browse Posts
           </Button>
         </div>
@@ -181,20 +160,13 @@ export default function PostDetail() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 pt-28 pb-8">
         <BackButton className="mb-6" />
 
         <div className="max-w-3xl mx-auto space-y-6">
           {/* Main post card */}
-          <div
-            className="rounded-[2.5rem] overflow-hidden border border-border bg-white shadow-2xl shadow-primary/5 animate-slide-up"
-          >
-            <div
-              className={`h-2.5 w-full ${post.help_type === 'offering'
-                ? 'bg-primary'
-                : 'bg-amber-500'
-                }`}
-            />
+          <div className="rounded-[2.5rem] overflow-hidden border border-border bg-white shadow-2xl shadow-primary/5 animate-slide-up">
+            <div className={`h-2.5 w-full ${post.help_type === 'offering' ? 'bg-primary' : 'bg-amber-500'}`} />
 
             {/* Images */}
             {post.images && post.images.length > 0 && (
@@ -209,7 +181,9 @@ export default function PostDetail() {
                       <img
                         src={imageUrl}
                         alt={`Post image ${index + 1}`}
-                        className={`w-full object-contain transition-transform duration-500 group-hover:scale-105 ${post.images.length === 1 ? 'max-h-80' : 'h-40'}`}
+                        className={`w-full object-contain transition-transform duration-500 group-hover:scale-105 ${
+                          post.images.length === 1 ? 'max-h-80' : 'h-40'
+                        }`}
                       />
                     </div>
                   ))}
@@ -226,23 +200,26 @@ export default function PostDetail() {
                   </Badge>
                 )}
                 <span
-                  className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white flex items-center gap-1.5 ${post.help_type === 'offering'
-                    ? 'bg-primary'
-                    : 'bg-amber-500'
-                    }`}
+                  className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white flex items-center gap-1.5 ${
+                    post.help_type === 'offering' ? 'bg-primary' : 'bg-amber-500'
+                  }`}
                 >
                   <Heart className="w-3.5 h-3.5" />
                   {post.help_type === 'offering' ? 'Offering Help' : 'Seeking Help'}
                 </span>
-                <Badge variant="outline" className="rounded-full capitalize ml-auto">{post.status}</Badge>
+                <Badge variant="outline" className="rounded-full capitalize ml-auto">
+                  {post.status}
+                </Badge>
               </div>
 
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <h1 className="text-3xl md:text-5xl font-black text-foreground tracking-tighter leading-none">{post.title}</h1>
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
+                <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tighter leading-none">
+                  {post.title}
+                </h1>
                 {user && post.user_id !== user.id && (
                   <Button
                     onClick={handleContactPoster}
-                    className="shrink-0 h-14 px-8 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-widest transition-all hover:scale-110 active:scale-95 shadow-xl shadow-primary/20"
+                    className="shrink-0 h-12 px-6 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-xl shadow-primary/20"
                   >
                     <MessageCircle className="w-4 h-4 mr-2" />
                     Contact
@@ -272,7 +249,7 @@ export default function PostDetail() {
           </div>
 
           {/* Comments card */}
-          <div className="rounded-2xl border border-border bg-card shadow-sm animate-fade-in-up delay-150">
+          <div className="rounded-2xl border border-border bg-card shadow-sm animate-fade-in-up">
             <div className="px-6 py-4 border-b border-border flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-primary" />
               <h2 className="font-bold text-foreground text-lg">Comments ({comments.length})</h2>
@@ -291,7 +268,7 @@ export default function PostDetail() {
                   <Button
                     onClick={handleSubmitComment}
                     disabled={!newComment.trim() || submitting}
-                    className="btn-shimmer text-white rounded-xl flex items-center gap-2"
+                    className="rounded-xl flex items-center gap-2"
                   >
                     <Send className="w-4 h-4" />
                     {submitting ? 'Posting...' : 'Post Comment'}
@@ -299,17 +276,18 @@ export default function PostDetail() {
                 </div>
               ) : (
                 <div className="text-center py-8 px-6 rounded-2xl flex items-center gap-4 bg-muted/30 border border-border">
-                  <div className="w-14 h-14 rounded-2xl overflow-hidden shrink-0 border-2 border-primary/20 bg-white">
-                    <img
-                      src="https://images.unsplash.com/photo-1544254254-8e434f0f0894?w=80&h=80&fit=crop&auto=format"
-                      alt="Login"
-                      className="w-full h-full object-contain opacity-80"
-                    />
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <MessageSquare className="w-6 h-6 text-primary/40" />
                   </div>
                   <div className="text-left">
-                    <p className="text-sm font-black text-foreground uppercase tracking-tight">Join the conversation</p>
+                    <p className="text-sm font-black text-foreground uppercase tracking-tight">
+                      Join the conversation
+                    </p>
                     <p className="text-xs text-foreground/40 font-medium mt-1">
-                      <Link to="/auth" className="text-primary font-black hover:underline inline-flex items-center gap-1 uppercase tracking-tighter">
+                      <Link
+                        to="/auth"
+                        className="text-primary font-black hover:underline inline-flex items-center gap-1 uppercase tracking-tighter"
+                      >
                         <LogIn className="w-3 h-3" /> Log in
                       </Link>{' '}
                       to leave a comment
@@ -322,13 +300,7 @@ export default function PostDetail() {
 
               {comments.length === 0 ? (
                 <div className="text-center py-10">
-                  <div className="w-16 h-16 mx-auto rounded-full overflow-hidden mb-3 shadow-sm animate-float">
-                    <img
-                      src="https://images.unsplash.com/photo-1518712391031-6b80f83d09f7?w=100&h=100&fit=crop&auto=format"
-                      alt="No comments yet"
-                      className="w-full h-full object-contain opacity-50"
-                    />
-                  </div>
+                  <MessageSquare className="w-12 h-12 text-muted-foreground/20 mx-auto mb-3" />
                   <p className="text-muted-foreground">No comments yet. Be the first to comment!</p>
                 </div>
               ) : (
@@ -340,12 +312,11 @@ export default function PostDetail() {
                       <div
                         key={comment.id}
                         className="flex gap-3 p-4 rounded-xl animate-fade-in-up"
-                        style={{
-                          background: 'hsl(38 80% 97%)',
-                          animationDelay: `${idx * 60}ms`,
-                        }}
+                        style={{ background: 'hsl(38 80% 97%)', animationDelay: `${idx * 60}ms` }}
                       >
-                        <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarGradient(cmtLetter)} flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0 mt-0.5`}>
+                        <div
+                          className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarGradient(cmtLetter)} flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0 mt-0.5`}
+                        >
                           {cmtLetter}
                         </div>
                         <div className="flex-1 min-w-0">

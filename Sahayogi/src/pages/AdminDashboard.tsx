@@ -12,8 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useSocket } from '@/contexts/SocketContext';
-
-const API_URL = 'http://localhost:3000/api';
+import { API_URL } from '@/config';
 
 const AdminDashboard = () => {
     const [allPosts, setAllPosts] = useState<any[]>([]);
@@ -196,7 +195,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid md:grid-cols-4 gap-6 mb-10">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
                 {[
                     { label: 'Total Users', value: users.length, icon: Users, color: 'text-primary', bg: 'bg-primary/5', border: 'border-primary/10' },
                     { label: 'Live Posts', value: allPosts.filter(p => p.status === 'available').length, icon: FileText, color: 'text-emerald-600', bg: 'bg-emerald-50/50', border: 'border-emerald-100' },

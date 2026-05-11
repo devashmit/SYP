@@ -5,8 +5,7 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { useSocket } from '@/contexts/SocketContext';
-
-const API_URL = 'http://localhost:3000/api';
+import { API_URL } from '@/config';
 
 type ReactionType = 'heart' | 'care' | 'sad';
 
