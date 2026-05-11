@@ -26,6 +26,8 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
+
+const SORT_OPTIONS = [
     { value: 'newest', label: 'Newest first' },
     { value: 'urgent', label: 'Urgent needs' },
 ];
@@ -40,7 +42,6 @@ const EMPTY_STATES: Record<TabId, { icon: React.ElementType; title: string; body
 };
 
 import FeedHero from '@/components/FeedHero';
-import { API_URL } from '@/config';
 
 const Feed = () => {
     const { user } = useAuth();
