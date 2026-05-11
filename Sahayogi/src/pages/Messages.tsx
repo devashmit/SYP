@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { Send, ArrowLeft, MessageCircle, Inbox, CheckCheck } from 'lucide-react';
+import {
+  Send, ArrowLeft, MessageCircle, Inbox, CheckCheck,
+  Search, SlidersHorizontal, Phone, Info, Mic, Plus,
+} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Navbar from '@/components/Navbar';
 import { useSocket } from '@/contexts/SocketContext';
@@ -29,18 +29,16 @@ interface Conversation {
   unread_count: number;
 }
 
-function avatarGradient(letter: string) {
-  const colors = [
-    'from-primary to-primary-dark',
-    'from-amber-400 to-amber-600',
-    'from-orange-400 to-orange-600',
-    'from-rose-400 to-rose-600',
-    'from-primary/80 to-primary',
-    'from-amber-500 to-amber-700',
-  ];
-  const idx = (letter.charCodeAt(0) - 65) % colors.length;
-  return colors[Math.max(0, idx)];
+/* Deterministic avatar color from username initial */
+const AVATAR_COLORS = [
+  '#C96B72', '#E8956D', '#7B9E87', '#6B8CAE', '#9B7BB8',
+  '#C4956A', '#7AADAD', '#B87B8E', '#8B9E6B', '#AE8B6B',
+];
+function avatarColor(letter: string) {
+  return AVATAR_COLORS[(letter.charCodeAt(0) - 65) % AVATAR_COLORS.length];
 }
+
+type TabId = 'all' | 'unread' | 'active';
 
 export default function Messages() {
   const navigate = useNavigate();
@@ -52,16 +50,15 @@ export default function Messages() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const selectedUserIdRef = useRef<string | null>(null);
-  const [selectedUsername, setSelectedUsername] = useState<string>('');
+  const [selectedUsername, setSelectedUsername] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  // Mobile: show chat panel when a conversation is selected
   const [showChat, setShowChat] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    selectedUserIdRef.current = selectedUserId;
-  }, [selectedUserId]);
+  useEffect(() => { selectedUserIdRef.current = selectedUserId; }, [selectedUserId]);
 
   const fetchConversations = async () => {
     try {
@@ -70,11 +67,7 @@ export default function Messages() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setConversations(await res.json());
-    } catch {
-      // silent
-    } finally {
-      setLoading(false);
-    }
+    } catch { /* silent */ } finally { setLoading(false); }
   };
 
   const fetchMessages = async (otherUserId: string) => {
@@ -84,9 +77,7 @@ export default function Messages() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setMessages(await res.json());
-    } catch {
-      // silent
-    }
+    } catch { /* silent */ }
   };
 
   const markMessagesAsRead = async (otherUserId: string) => {
@@ -97,18 +88,13 @@ export default function Messages() {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchConversations();
-    } catch {
-      // silent
-    }
+    } catch { /* silent */ }
   };
 
   useEffect(() => {
     if (!user) return;
     const userParam = searchParams.get('user');
-    if (userParam) {
-      setSelectedUserId(userParam);
-      setShowChat(true);
-    }
+    if (userParam) { setSelectedUserId(userParam); setShowChat(true); }
     fetchConversations();
   }, [user]);
 
@@ -122,27 +108,22 @@ export default function Messages() {
     } else {
       fetch(`${API_URL}/users/profiles/${selectedUserId}`, {
         headers: { Authorization: `Bearer ${sessionStorage.getItem('sahayogi_token')}` },
-      })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((profile) => { if (profile) setSelectedUsername(profile.username); });
+      }).then((r) => (r.ok ? r.json() : null)).then((p) => { if (p) setSelectedUsername(p.username); });
     }
   }, [selectedUserId]);
 
   useEffect(() => {
     if (!socket || !user) return;
-    const handleReceiveMessage = (message: Message) => {
+    const handler = (message: Message) => {
       fetchConversations();
-      const currentSelectedID = selectedUserIdRef.current;
-      if (
-        currentSelectedID &&
-        (message.sender_id === currentSelectedID || message.receiver_id === currentSelectedID)
-      ) {
+      const cur = selectedUserIdRef.current;
+      if (cur && (message.sender_id === cur || message.receiver_id === cur)) {
         setMessages((prev) => [...prev, message]);
-        if (message.sender_id === currentSelectedID) markMessagesAsRead(currentSelectedID);
+        if (message.sender_id === cur) markMessagesAsRead(cur);
       }
     };
-    socket.on('receive_message', handleReceiveMessage);
-    return () => { socket.off('receive_message', handleReceiveMessage); };
+    socket.on('receive_message', handler);
+    return () => { socket.off('receive_message', handler); };
   }, [socket, user]);
 
   useEffect(() => {
@@ -151,24 +132,17 @@ export default function Messages() {
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedUserId) return;
+    const optimisticContent = newMessage;
+    setNewMessage('');
     try {
       const token = sessionStorage.getItem('sahayogi_token');
       const res = await fetch(`${API_URL}/messages`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ receiver_id: selectedUserId, content: newMessage }),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ receiver_id: selectedUserId, content: optimisticContent }),
       });
-      if (res.ok) {
-        setNewMessage('');
-      } else {
-        toast.error('Failed to send message');
-      }
-    } catch {
-      toast.error('Failed to send message');
-    }
+      if (!res.ok) { toast.error('Failed to send'); setNewMessage(optimisticContent); }
+    } catch { toast.error('Failed to send'); setNewMessage(optimisticContent); }
   };
 
   const handleSelectConversation = (userId: string) => {
@@ -179,226 +153,401 @@ export default function Messages() {
   const selectedConversation = conversations.find((c) => c.user_id === selectedUserId);
   const displayUsername = selectedConversation?.username || selectedUsername;
   const displayLetter = displayUsername?.[0]?.toUpperCase() || '?';
+  const displayColor = avatarColor(displayLetter);
+
+  const filteredConversations = conversations.filter((c) => {
+    const matchesSearch = c.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.last_message?.toLowerCase().includes(searchQuery.toLowerCase());
+    if (activeTab === 'unread') return matchesSearch && c.unread_count > 0;
+    if (activeTab === 'active') return matchesSearch;
+    return matchesSearch;
+  });
+
+  const totalUnread = conversations.reduce((s, c) => s + c.unread_count, 0);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: '#F7F5F4' }}>
       <Navbar />
-      <main className="container mx-auto px-4 pt-24 pb-6">
-        <Button
-          variant="ghost"
-          onClick={() => (showChat ? setShowChat(false) : navigate('/'))}
-          className="mb-4 hover:text-primary transition-colors"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {showChat ? 'Back to conversations' : 'Back to Home'}
-        </Button>
 
-        <div className="grid lg:grid-cols-3 gap-6 h-[calc(100vh-180px)] max-h-[800px]">
+      <div className="pt-24 pb-6 px-0 sm:px-4 max-w-5xl mx-auto">
 
-          {/* Conversations list - hidden on mobile when chat is open */}
-          <div className={`rounded-2xl border border-border bg-white overflow-hidden flex flex-col shadow-sm ${showChat ? 'hidden lg:flex' : 'flex'}`}>
-            <div className="px-5 py-5 border-b border-border flex items-center justify-between bg-white relative overflow-hidden">
-              <div className="absolute inset-0 bg-primary/5 opacity-50" />
-              <div className="flex items-center gap-3 relative z-10">
-                <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                  <MessageCircle className="w-5 h-5" />
-                </div>
-                <h2 className="font-bold text-foreground text-lg tracking-tighter">Messages</h2>
+        {/* ── Page header (hidden when chat open on mobile) ── */}
+        <div className={`px-4 sm:px-0 mb-4 ${showChat ? 'hidden lg:block' : 'block'}`}>
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-sm font-medium mb-4 transition-colors"
+            style={{ color: '#7A6F6F' }}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Home
+          </button>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: '#C96B7215' }}>
+                <MessageCircle className="w-5 h-5" style={{ color: '#C96B72' }} />
               </div>
-              <span className="text-[10px] font-bold text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full border border-border/50 relative z-10 uppercase tracking-wider">
-                {conversations.length} Active
-              </span>
+              <div>
+                <h1 className="text-xl font-bold" style={{ color: '#1E1B1B', letterSpacing: '-0.02em' }}>Messages</h1>
+                {totalUnread > 0 && (
+                  <p className="text-xs font-medium" style={{ color: '#C96B72' }}>{totalUnread} unread</p>
+                )}
+              </div>
+            </div>
+            <span
+              className="text-xs font-semibold px-3 py-1 rounded-full"
+              style={{ background: '#C96B7215', color: '#C96B72', border: '1px solid #C96B7230' }}
+            >
+              {conversations.length} Active
+            </span>
+          </div>
+        </div>
+
+        {/* ── Main layout ── */}
+        <div className="flex gap-0 sm:gap-4 h-[calc(100vh-200px)] max-h-[780px]">
+
+          {/* ════ CONVERSATIONS PANEL ════ */}
+          <div
+            className={`flex flex-col w-full sm:w-[340px] lg:w-[360px] shrink-0 overflow-hidden ${showChat ? 'hidden lg:flex' : 'flex'}`}
+            style={{ background: '#FFFFFF', borderRadius: '20px', border: '1px solid #E8E1E1', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}
+          >
+            {/* Search bar */}
+            <div className="px-4 pt-4 pb-3" style={{ borderBottom: '1px solid #F0EBEB' }}>
+              <div
+                className="flex items-center gap-2 px-3 h-10 rounded-xl"
+                style={{ background: '#F7F5F4', border: '1px solid #E8E1E1' }}
+              >
+                <Search className="w-4 h-4 shrink-0" style={{ color: '#7A6F6F' }} />
+                <input
+                  type="text"
+                  placeholder="Search conversations..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-1 bg-transparent text-sm outline-none min-h-0"
+                  style={{ color: '#1E1B1B', fontSize: '13px' }}
+                />
+                <button className="shrink-0 p-1 rounded-lg transition-colors hover:bg-white" style={{ color: '#7A6F6F' }}>
+                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Tabs */}
+              <div className="flex gap-2 mt-3">
+                {(['all', 'unread', 'active'] as TabId[]).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className="px-4 py-1.5 rounded-full text-xs font-semibold capitalize transition-all"
+                    style={
+                      activeTab === tab
+                        ? { background: '#C96B72', color: '#fff', border: '1px solid #C96B72' }
+                        : { background: 'transparent', color: '#7A6F6F', border: '1px solid #E8E1E1' }
+                    }
+                  >
+                    {tab}
+                    {tab === 'unread' && totalUnread > 0 && (
+                      <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
+                        style={{ background: activeTab === 'unread' ? 'rgba(255,255,255,0.3)' : '#C96B72', color: '#fff' }}>
+                        {totalUnread}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <ScrollArea className="flex-1 overflow-y-auto">
+            {/* Conversation list */}
+            <div className="flex-1 overflow-y-auto scrollbar-hide">
               {loading ? (
-                <div className="p-5 space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full skeleton-shimmer shrink-0" />
+                <div className="p-4 space-y-3">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="flex items-center gap-3 p-2">
+                      <div className="w-11 h-11 rounded-full skeleton-shimmer shrink-0" />
                       <div className="flex-1 space-y-2">
-                        <div className="h-4 skeleton-shimmer rounded w-3/4" />
-                        <div className="h-3 skeleton-shimmer rounded w-1/2" />
+                        <div className="h-3.5 skeleton-shimmer rounded-full w-2/3" />
+                        <div className="h-3 skeleton-shimmer rounded-full w-1/2" />
                       </div>
                     </div>
                   ))}
                 </div>
-              ) : conversations.length === 0 ? (
-                <div className="p-8 text-center">
-                  <MessageCircle className="w-12 h-12 text-muted-foreground/20 mx-auto mb-3" />
-                  <p className="text-muted-foreground text-sm">No conversations yet</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">
-                    Start by messaging someone from a post
-                  </p>
+              ) : filteredConversations.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full py-16 px-6 text-center">
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: '#F7F5F4' }}>
+                    <MessageCircle className="w-7 h-7" style={{ color: '#C96B7240' }} />
+                  </div>
+                  <p className="text-sm font-semibold mb-1" style={{ color: '#1E1B1B' }}>No conversations yet</p>
+                  <p className="text-xs" style={{ color: '#7A6F6F' }}>Message someone from a post to get started</p>
                 </div>
               ) : (
-                conversations.map((conv) => {
+                filteredConversations.map((conv) => {
                   const letter = conv.username[0]?.toUpperCase() || '?';
+                  const color = avatarColor(letter);
                   const isSelected = selectedUserId === conv.user_id;
+                  const hasUnread = conv.unread_count > 0;
                   return (
                     <button
                       key={conv.user_id}
                       onClick={() => handleSelectConversation(conv.user_id)}
-                      className={`w-full p-4 text-left border-b border-border/40 transition-all duration-300 relative group overflow-hidden ${
-                        isSelected ? 'bg-primary/[0.03] pl-3' : 'hover:bg-muted/30'
-                      }`}
+                      className="w-full text-left transition-all relative"
+                      style={{
+                        padding: '12px 16px',
+                        borderBottom: '1px solid #F7F5F4',
+                        background: isSelected ? '#FDF0F1' : 'transparent',
+                        borderLeft: isSelected ? '3px solid #C96B72' : '3px solid transparent',
+                      }}
                     >
-                      {isSelected && (
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary animate-fade-in" />
-                      )}
                       <div className="flex items-center gap-3">
-                        <div
-                          className={`w-11 h-11 rounded-full bg-gradient-to-br ${avatarGradient(letter)} flex items-center justify-center text-white font-bold text-base shadow-sm shrink-0`}
-                        >
-                          {letter}
+                        {/* Avatar with online dot */}
+                        <div className="relative shrink-0">
+                          <div
+                            className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-base"
+                            style={{ background: color }}
+                          >
+                            {letter}
+                          </div>
+                          {/* Simulated online indicator for active conversations */}
+                          {conv.unread_count > 0 && (
+                            <span
+                              className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white"
+                              style={{ background: '#22C55E' }}
+                            />
+                          )}
                         </div>
+
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-0.5">
                             <span
-                              className={`font-semibold text-sm truncate pr-2 ${
-                                isSelected ? 'text-primary' : 'text-foreground'
-                              }`}
+                              className="text-sm truncate pr-2"
+                              style={{
+                                color: '#1E1B1B',
+                                fontWeight: hasUnread ? 700 : 500,
+                              }}
                             >
                               {conv.username}
                             </span>
-                            {conv.unread_count > 0 && (
-                              <span className="bg-primary text-primary-foreground text-xs rounded-full px-2 py-0.5 font-bold shrink-0">
+                            <span className="text-[10px] shrink-0" style={{ color: '#7A6F6F' }}>
+                              {conv.last_message_time
+                                ? formatDistanceToNow(new Date(conv.last_message_time), { addSuffix: false })
+                                : ''}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <p
+                              className="text-xs truncate flex-1"
+                              style={{
+                                color: hasUnread ? '#1E1B1B' : '#7A6F6F',
+                                fontWeight: hasUnread ? 500 : 400,
+                              }}
+                            >
+                              {conv.last_message || 'No messages yet'}
+                            </p>
+                            {hasUnread && (
+                              <span
+                                className="shrink-0 min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                                style={{ background: '#C96B72' }}
+                              >
                                 {conv.unread_count}
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {conv.last_message || 'No messages yet'}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground/60 mt-0.5">
-                            {conv.last_message_time
-                              ? formatDistanceToNow(new Date(conv.last_message_time), { addSuffix: true })
-                              : ''}
-                          </p>
                         </div>
                       </div>
                     </button>
                   );
                 })
               )}
-            </ScrollArea>
+            </div>
           </div>
 
-          {/* Chat panel - full width on mobile when open */}
+          {/* ════ CHAT PANEL ════ */}
           <div
-            className={`lg:col-span-2 rounded-3xl border border-border bg-card overflow-hidden flex flex-col shadow-sm relative ${
-              showChat ? 'flex' : 'hidden lg:flex'
-            }`}
+            className={`flex-1 flex flex-col overflow-hidden ${showChat ? 'flex' : 'hidden lg:flex'}`}
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '20px',
+              border: '1px solid #E8E1E1',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+            }}
           >
             {selectedUserId ? (
               <>
+                {/* Chat header */}
                 <div
-                  className="px-5 py-4 border-b border-border flex items-center gap-3"
-                  style={{
-                    background:
-                      'linear-gradient(135deg, hsl(var(--muted) / 0.05), hsl(var(--muted) / 0.02))',
-                  }}
+                  className="flex items-center gap-3 px-4 py-3 shrink-0"
+                  style={{ borderBottom: '1px solid #F0EBEB', background: '#FFFFFF' }}
                 >
-                  <div
-                    className={`w-12 h-12 rounded-full bg-gradient-to-br ${avatarGradient(displayLetter)} flex items-center justify-center text-white font-bold text-xl shadow-sm border-2 border-white ring-2 ring-primary/10`}
+                  {/* Back button on mobile */}
+                  <button
+                    onClick={() => setShowChat(false)}
+                    className="lg:hidden p-2 -ml-1 rounded-xl transition-colors hover:bg-gray-50"
+                    style={{ color: '#7A6F6F' }}
                   >
-                    {displayLetter}
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+
+                  <div className="relative shrink-0">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-base"
+                      style={{ background: displayColor }}
+                    >
+                      {displayLetter}
+                    </div>
+                    <span
+                      className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white"
+                      style={{ background: '#22C55E' }}
+                    />
                   </div>
-                  <div>
-                    <h3 className="font-bold text-foreground text-lg tracking-tight">{displayUsername}</h3>
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5 mt-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
-                      Active Connection
-                    </span>
+
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-bold truncate" style={{ color: '#1E1B1B' }}>{displayUsername}</h3>
+                    <p className="text-xs flex items-center gap-1" style={{ color: '#22C55E' }}>
+                      <span className="w-1.5 h-1.5 rounded-full inline-block animate-pulse" style={{ background: '#22C55E' }} />
+                      Online
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors hover:bg-gray-50" style={{ color: '#7A6F6F' }}>
+                      <Phone className="w-4 h-4" />
+                    </button>
+                    <button className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors hover:bg-gray-50" style={{ color: '#7A6F6F' }}>
+                      <Info className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-5 compassionate-bg">
-                  <div className="space-y-4 relative z-10">
-                    {messages.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-16 text-center">
-                        <MessageCircle className="w-16 h-16 text-muted-foreground/20 mb-4" />
-                        <p className="text-muted-foreground">
-                          Start a conversation with{' '}
-                          <span className="font-semibold text-foreground">{displayUsername}</span>
-                        </p>
+                {/* Messages area */}
+                <div
+                  className="flex-1 overflow-y-auto scrollbar-hide px-4 py-4 space-y-3"
+                  style={{ background: '#FDFCFB' }}
+                >
+                  {/* Date separator */}
+                  <div className="flex items-center gap-3 my-2">
+                    <div className="flex-1 h-px" style={{ background: '#E8E1E1' }} />
+                    <span className="text-[10px] font-semibold px-2" style={{ color: '#7A6F6F' }}>Today</span>
+                    <div className="flex-1 h-px" style={{ background: '#E8E1E1' }} />
+                  </div>
+
+                  {messages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                      <div
+                        className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+                        style={{ background: '#F7F5F4' }}
+                      >
+                        <MessageCircle className="w-8 h-8" style={{ color: '#C96B7240' }} />
                       </div>
-                    ) : (
-                      messages.map((message, idx) => {
-                        const isMine = message.sender_id === user?.id;
-                        return (
-                          <div
-                            key={message.id}
-                            className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
-                            style={{ animationDelay: `${Math.min(idx, 5) * 30}ms` }}
-                          >
+                      <p className="text-sm font-medium" style={{ color: '#1E1B1B' }}>
+                        Start a conversation with <span style={{ color: '#C96B72' }}>{displayUsername}</span>
+                      </p>
+                      <p className="text-xs mt-1" style={{ color: '#7A6F6F' }}>Messages are private and secure</p>
+                    </div>
+                  ) : (
+                    messages.map((message, idx) => {
+                      const isMine = message.sender_id === user?.id;
+                      return (
+                        <div
+                          key={message.id}
+                          className={`flex ${isMine ? 'justify-end' : 'justify-start'} animate-message-pop`}
+                          style={{ animationDelay: `${Math.min(idx, 5) * 20}ms` }}
+                        >
+                          {/* Other person avatar */}
+                          {!isMine && (
                             <div
-                              className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-5 py-3 shadow-sm ${
-                                isMine
-                                  ? 'rounded-br-sm text-white bg-primary shadow-primary/20'
-                                  : 'rounded-bl-sm bg-white border border-border/60 text-foreground'
-                              }`}
+                              className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mr-2 mt-auto"
+                              style={{ background: displayColor }}
                             >
-                              <p
-                                className={`text-sm leading-relaxed whitespace-pre-wrap break-words ${
-                                  isMine ? 'text-white' : 'text-foreground'
-                                }`}
-                              >
-                                {message.content}
-                              </p>
-                              <div className={`flex items-center gap-1 mt-1 ${isMine ? 'justify-end' : ''}`}>
-                                <p className={`text-[10px] ${isMine ? 'text-white/60' : 'text-muted-foreground'}`}>
-                                  {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
-                                </p>
-                                {isMine && message.is_read && (
-                                  <CheckCheck className="w-3 h-3 text-white/60" />
-                                )}
-                              </div>
+                              {displayLetter}
+                            </div>
+                          )}
+
+                          <div className={`max-w-[72%] sm:max-w-[60%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
+                            <div
+                              className="px-4 py-2.5 text-sm leading-relaxed break-words"
+                              style={{
+                                borderRadius: isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                                background: isMine ? '#C96B72' : '#FFFFFF',
+                                color: isMine ? '#FFFFFF' : '#1E1B1B',
+                                border: isMine ? 'none' : '1px solid #E8E1E1',
+                                boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                              }}
+                            >
+                              {message.content}
+                            </div>
+                            <div className={`flex items-center gap-1 mt-1 px-1 ${isMine ? 'flex-row-reverse' : ''}`}>
+                              <span className="text-[10px]" style={{ color: '#7A6F6F' }}>
+                                {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                              {isMine && (
+                                <CheckCheck
+                                  className="w-3 h-3"
+                                  style={{ color: message.is_read ? '#C96B72' : '#7A6F6F' }}
+                                />
+                              )}
                             </div>
                           </div>
-                        );
-                      })
-                    )}
-                    <div ref={messagesEndRef} />
-                  </div>
+                        </div>
+                      );
+                    })
+                  )}
+                  <div ref={messagesEndRef} />
                 </div>
 
-                <div className="p-4 border-t border-border bg-white">
-                  <div className="flex gap-2 items-center">
-                    <Input
+                {/* Message input */}
+                <div
+                  className="px-4 py-3 shrink-0"
+                  style={{ borderTop: '1px solid #F0EBEB', background: '#FFFFFF' }}
+                >
+                  <div
+                    className="flex items-center gap-2 px-3 rounded-2xl"
+                    style={{ background: '#F7F5F4', border: '1px solid #E8E1E1', minHeight: '48px' }}
+                  >
+                    <button className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-colors hover:bg-white" style={{ color: '#7A6F6F' }}>
+                      <Plus className="w-4 h-4" />
+                    </button>
+
+                    <input
+                      type="text"
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                       placeholder="Type a message..."
-                      className="flex-1 rounded-full px-5 h-12 border-border focus:border-primary focus:ring-primary/20 bg-muted/10"
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                      className="flex-1 bg-transparent text-sm outline-none py-2"
+                      style={{ color: '#1E1B1B', fontSize: '14px' }}
                     />
-                    <Button
-                      onClick={handleSendMessage}
-                      disabled={!newMessage.trim()}
-                      className="w-12 h-12 rounded-2xl p-0 shrink-0 bg-primary text-white shadow-xl shadow-primary/20 disabled:opacity-50 transition-all hover:scale-105 active:scale-95 group"
-                    >
-                      <Send className="h-5 w-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                    </Button>
+
+                    {newMessage.trim() ? (
+                      <button
+                        onClick={handleSendMessage}
+                        className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-95"
+                        style={{ background: '#C96B72', color: '#fff' }}
+                      >
+                        <Send className="w-4 h-4" />
+                      </button>
+                    ) : (
+                      <button className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-colors hover:bg-white" style={{ color: '#7A6F6F' }}>
+                        <Mic className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                <div className="w-20 h-20 rounded-full bg-muted/30 flex items-center justify-center mb-6">
-                  <Inbox className="w-10 h-10 text-muted-foreground/30" />
+              /* Empty state */
+              <div className="flex flex-col items-center justify-center h-full text-center px-8">
+                <div
+                  className="w-20 h-20 rounded-3xl flex items-center justify-center mb-6"
+                  style={{ background: '#F7F5F4' }}
+                >
+                  <Inbox className="w-10 h-10" style={{ color: '#C96B7240' }} />
                 </div>
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageCircle className="w-5 h-5 text-primary" />
-                  <h3 className="text-xl font-bold text-foreground">Your Messages</h3>
-                </div>
-                <p className="text-muted-foreground text-sm">
-                  Select a conversation to start chatting
+                <h3 className="text-lg font-bold mb-2" style={{ color: '#1E1B1B' }}>Your Messages</h3>
+                <p className="text-sm max-w-[220px]" style={{ color: '#7A6F6F' }}>
+                  Select a conversation from the left to start chatting
                 </p>
               </div>
             )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

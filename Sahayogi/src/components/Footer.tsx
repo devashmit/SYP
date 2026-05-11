@@ -1,321 +1,141 @@
 import { Link } from 'react-router-dom';
 import sahayogiLogo from '@/assets/Logo.svg';
 
-// ─── Trust signal data ────────────────────────────────────────────────
-const TRUST_SIGNALS = [
-    { icon: '✓', label: 'Verified Community' },
-    { icon: '🔒', label: 'Secure Platform' },
-    { icon: '⚡', label: 'Real-time Updates' },
-    { icon: '❤️', label: 'Community First' },
+const EXPLORE = [
+  { label: 'Home', to: '/' },
+  { label: 'Feed', to: '/feed' },
+  { label: 'Community Needs', to: '/community-needs' },
+  { label: 'About Us', to: '/about' },
 ];
 
-// ─── Navigation links ─────────────────────────────────────────────────
-const NAV_LINKS = [
-    { label: 'Home', to: '/' },
-    { label: 'Feed', to: '/feed' },
-    { label: 'Community Needs', to: '/community-needs' },
-    { label: 'About Us', to: '/about' },
+const COMMUNITY = [
+  { label: 'Create a Post', to: '/create' },
+  { label: 'Community Needs', to: '/community-needs' },
+  { label: 'Events', to: '/events' },
+  { label: 'Volunteers', to: '/volunteers' },
 ];
 
-// ─── CTA buttons ───────────────────────────────────────────────────────
-const CTA_BUTTONS = [
-    { label: 'About Us', to: '/about' },
-    { label: 'Create a Post', to: '/create-post' },
-    { label: 'Community Needs', to: '/community-needs' },
+const SUPPORT = [
+  { label: 'Help Center', to: '/help' },
+  { label: 'Guidelines', to: '/guidelines' },
+  { label: 'Contact Us', to: '/contact' },
+  { label: 'Privacy Policy', to: '/privacy' },
 ];
 
-// ─── Component ────────────────────────────────────────────────────────
-const Footer = () => {
-    return (
-        <footer
-            style={{
-                background: 'linear-gradient(to bottom, hsl(30 12% 96%), hsl(34 25% 94%))',
-                borderTop: '1px solid hsl(30 12% 87% / 0.55)',
-                paddingTop: '64px',
-                paddingBottom: '0',
-                position: 'relative',
-                overflow: 'hidden',
-            }}
-        >
-            {/* ── Subtle mandala accent (top-right, barely visible) ──────── */}
-            <div
-                aria-hidden
-                style={{
-                    position: 'absolute',
-                    top: '-60px',
-                    right: '-80px',
-                    width: '320px',
-                    height: '320px',
-                    borderRadius: '50%',
-                    background: 'radial-gradient(circle, hsl(355 68% 40% / 0.04) 0%, transparent 70%)',
-                    pointerEvents: 'none',
-                }}
+const TRUST = [
+  { icon: '✓', label: 'Verified Community' },
+  { icon: '🔒', label: 'Secure Platform' },
+  { icon: '⚡', label: 'Real-time Updates' },
+  { icon: '❤️', label: 'Community First' },
+];
+
+const Footer = () => (
+  <footer style={{ background: '#F7F5F4', borderTop: '1px solid #E8E1E1' }}>
+    <div className="container mx-auto px-4 max-w-5xl">
+
+      {/* ── Main grid ── */}
+      <div className="py-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
+        {/* Brand column */}
+        <div className="sm:col-span-2 lg:col-span-1">
+          <Link to="/" className="inline-flex items-center gap-2 mb-3 group">
+            <img src={sahayogiLogo} alt="Sahayogi" className="h-8 w-auto object-contain" />
+            <span className="font-bold text-base" style={{ color: '#1E1B1B', letterSpacing: '-0.01em' }}>
+              Sahayogi<span style={{ color: '#C96B72' }}>.</span>
+            </span>
+          </Link>
+          <p className="text-sm leading-relaxed mb-4" style={{ color: '#7A6F6F', maxWidth: '220px' }}>
+            मनदेखि सहयोग। नेपालभरिका समुदायहरूलाई मद्दत।
+          </p>
+          <div className="flex items-center gap-2">
+            <img
+              src="https://flagcdn.com/w40/np.png"
+              alt="Nepal"
+              style={{ height: '12px', borderRadius: '2px', opacity: 0.8 }}
             />
+            <span className="text-xs font-medium" style={{ color: '#7A6F6F' }}>Kathmandu, Nepal</span>
+          </div>
+        </div>
 
-            <div className="container mx-auto px-4 max-w-5xl">
-
-                {/* ── Main 3-zone grid ──────────────────────────────────────── */}
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr auto 1fr',
-                        gap: '2.5rem',
-                        alignItems: 'start',
-                    }}
-                    className="footer-grid"
+        {/* Explore */}
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#1E1B1B' }}>Explore</p>
+          <ul className="space-y-2.5">
+            {EXPLORE.map(({ label, to }) => (
+              <li key={label}>
+                <Link
+                  to={to}
+                  className="text-sm transition-colors hover:text-primary"
+                  style={{ color: '#7A6F6F' }}
                 >
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-                    {/* ── LEFT: Brand ─────────────────────────────────────────── */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <Link
-                            to="/"
-                            className="footer-logo-link"
-                            style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                                textDecoration: 'none',
-                                transition: 'transform 150ms ease',
-                                width: 'fit-content',
-                            }}
-                            onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.02)')}
-                            onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-                        >
-                            <img src={sahayogiLogo} alt="Sahayogi Logo" className="h-8 w-auto object-contain max-w-[150px]" />
-                            <span
-                                style={{
-                                    fontWeight: 600,
-                                    fontSize: '15px',
-                                    letterSpacing: '-0.01em',
-                                    color: 'hsl(20 25% 10%)',
-                                }}
-                            >
-                                Sahayogi<span style={{ color: 'hsl(355 68% 40%)' }}>.</span>
-                            </span>
-                        </Link>
-
-                        <p
-                            style={{
-                                fontSize: '13px',
-                                color: 'hsl(20 12% 48% / 0.72)',
-                                maxWidth: '260px',
-                                lineHeight: '1.65',
-                                margin: 0,
-                            }}
-                        >
-                            मनदेखि सहयोग। नेपालभरिका समुदायहरूलाई मद्दत।
-                        </p>
-                    </div>
-
-                    {/* ── CENTER: Navigation + CTA ─────────────────────────────── */}
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '20px',
-                        }}
-                    >
-                        {/* Nav links */}
-                        <nav
-                            aria-label="Footer navigation"
-                            style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 20px' }}
-                        >
-                            {NAV_LINKS.map(({ label, to }) => (
-                                <Link
-                                    key={label}
-                                    to={to}
-                                    style={{
-                                        fontSize: '14px',
-                                        color: 'hsl(20 12% 48% / 0.7)',
-                                        textDecoration: 'none',
-                                        position: 'relative',
-                                        transition: 'color 180ms ease, opacity 180ms ease',
-                                        paddingBottom: '2px',
-                                    }}
-                                    className="footer-nav-link"
-                                    onMouseEnter={e => {
-                                        e.currentTarget.style.color = 'hsl(355 68% 40%)';
-                                        const line = e.currentTarget.querySelector('.footer-underline') as HTMLElement;
-                                        if (line) line.style.width = '100%';
-                                    }}
-                                    onMouseLeave={e => {
-                                        e.currentTarget.style.color = 'hsl(20 12% 48% / 0.7)';
-                                        const line = e.currentTarget.querySelector('.footer-underline') as HTMLElement;
-                                        if (line) line.style.width = '0%';
-                                    }}
-                                >
-                                    {label}
-                                    <span
-                                        className="footer-underline"
-                                        style={{
-                                            position: 'absolute',
-                                            bottom: 0,
-                                            left: 0,
-                                            height: '1px',
-                                            width: '0%',
-                                            background: 'hsl(355 68% 40%)',
-                                            transition: 'width 180ms ease',
-                                            borderRadius: '9999px',
-                                        }}
-                                    />
-                                </Link>
-                            ))}
-                        </nav>
-
-                        {/* CTA ghost buttons */}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px' }}>
-                            {CTA_BUTTONS.map(({ label, to }) => (
-                                <Link
-                                    key={label}
-                                    to={to}
-                                    style={{
-                                        fontSize: '12px',
-                                        fontWeight: 500,
-                                        color: 'hsl(20 12% 48%)',
-                                        border: '1px solid hsl(30 12% 87%)',
-                                        borderRadius: '9999px',
-                                        padding: '5px 14px',
-                                        textDecoration: 'none',
-                                        transition: 'background 160ms ease, border-color 160ms ease, color 160ms ease',
-                                        background: 'transparent',
-                                        letterSpacing: '0.01em',
-                                        whiteSpace: 'nowrap',
-                                    }}
-                                    onMouseEnter={e => {
-                                        const el = e.currentTarget;
-                                        el.style.background = 'hsl(355 68% 40% / 0.06)';
-                                        el.style.borderColor = 'hsl(355 68% 40% / 0.28)';
-                                        el.style.color = 'hsl(355 68% 40%)';
-                                    }}
-                                    onMouseLeave={e => {
-                                        const el = e.currentTarget;
-                                        el.style.background = 'transparent';
-                                        el.style.borderColor = 'hsl(30 12% 87%)';
-                                        el.style.color = 'hsl(20 12% 48%)';
-                                    }}
-                                >
-                                    {label}
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* ── RIGHT: Location / Meta ───────────────────────────────── */}
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'flex-end',
-                            gap: '6px',
-                        }}
-                    >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <img
-                                src="https://flagcdn.com/w40/np.png"
-                                alt="Nepal"
-                                style={{ height: '13px', borderRadius: '2px', opacity: 0.85 }}
-                            />
-                            <span style={{ fontSize: '13px', color: 'hsl(20 12% 48%)', fontWeight: 500 }}>
-                                📍 Kathmandu, Nepal
-                            </span>
-                        </div>
-                        <p style={{ fontSize: '11.5px', color: 'hsl(20 12% 48% / 0.55)', margin: 0, textAlign: 'right' }}>
-                            Built for local communities
-                        </p>
-                    </div>
-
-                </div>{/* /main grid */}
-
-                {/* ── Trust Signals Row ─────────────────────────────────────────── */}
-                <div
-                    style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        justifyContent: 'center',
-                        gap: '6px 28px',
-                        marginTop: '40px',
-                        paddingTop: '28px',
-                        borderTop: '1px solid hsl(30 12% 87% / 0.45)',
-                    }}
+        {/* Community */}
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#1E1B1B' }}>Community</p>
+          <ul className="space-y-2.5">
+            {COMMUNITY.map(({ label, to }) => (
+              <li key={label}>
+                <Link
+                  to={to}
+                  className="text-sm transition-colors hover:text-primary"
+                  style={{ color: '#7A6F6F' }}
                 >
-                    {TRUST_SIGNALS.map(({ icon, label }) => (
-                        <div
-                            key={label}
-                            className="trust-signal"
-                            style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '5px',
-                                fontSize: '11.5px',
-                                color: 'hsl(20 12% 48% / 0.62)',
-                                cursor: 'default',
-                                transition: 'color 160ms ease',
-                                userSelect: 'none',
-                            }}
-                            onMouseEnter={e => (e.currentTarget.style.color = 'hsl(355 68% 40%)')}
-                            onMouseLeave={e => (e.currentTarget.style.color = 'hsl(20 12% 48% / 0.62)')}
-                        >
-                            <span style={{ fontSize: '13px', lineHeight: 1 }}>{icon}</span>
-                            <span>{label}</span>
-                        </div>
-                    ))}
-                </div>
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-                {/* ── Bottom bar ───────────────────────────────────────────────── */}
-                <div
-                    style={{
-                        marginTop: '28px',
-                        padding: '14px 0 18px',
-                        borderTop: '1px solid hsl(30 12% 87% / 0.3)',
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: '8px',
-                    }}
+        {/* Support */}
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#1E1B1B' }}>Support</p>
+          <ul className="space-y-2.5">
+            {SUPPORT.map(({ label, to }) => (
+              <li key={label}>
+                <Link
+                  to={to}
+                  className="text-sm transition-colors hover:text-primary"
+                  style={{ color: '#7A6F6F' }}
                 >
-                    <p style={{ fontSize: '11px', color: 'hsl(20 12% 48% / 0.5)', margin: 0 }}>
-                        © 2024 Sahayogi Nepal
-                    </p>
-                    <p
-                        style={{
-                            fontSize: '11px',
-                            fontStyle: 'italic',
-                            color: 'hsl(20 12% 48% / 0.45)',
-                            margin: 0,
-                            letterSpacing: '0.01em',
-                        }}
-                    >
-                        बनाइएको माया साथ, नेपालको लागि
-                    </p>
-                </div>
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
 
-            </div>{/* /container */}
+      {/* ── Trust signals ── */}
+      <div
+        className="py-5 flex flex-wrap items-center justify-center gap-x-8 gap-y-3"
+        style={{ borderTop: '1px solid #E8E1E1' }}
+      >
+        {TRUST.map(({ icon, label }) => (
+          <div key={label} className="flex items-center gap-2">
+            <span className="text-sm">{icon}</span>
+            <span className="text-xs font-medium" style={{ color: '#7A6F6F' }}>{label}</span>
+          </div>
+        ))}
+      </div>
 
-            {/* ── Responsive styles via <style> ────────────────────────────── */}
-            <style>{`
-        @media (max-width: 768px) {
-          .footer-grid {
-            grid-template-columns: 1fr !important;
-            text-align: center;
-          }
-          .footer-grid > div:first-child {
-            align-items: center;
-          }
-          .footer-grid > div:first-child p {
-            text-align: center;
-          }
-          .footer-grid > div:last-child {
-            align-items: center !important;
-          }
-          .footer-grid > div:last-child p {
-            text-align: center !important;
-          }
-        }
-      `}</style>
-        </footer>
-    );
-};
+      {/* ── Bottom bar ── */}
+      <div
+        className="py-4 flex flex-col sm:flex-row items-center justify-between gap-2"
+        style={{ borderTop: '1px solid #E8E1E1' }}
+      >
+        <p className="text-xs" style={{ color: '#7A6F6F' }}>© 2024 Sahayogi Nepal</p>
+        <p className="text-xs italic" style={{ color: '#7A6F6F' }}>बनाइएको माया साथ, नेपालको लागि</p>
+      </div>
+
+    </div>
+  </footer>
+);
 
 export default Footer;
