@@ -149,13 +149,8 @@ const CommunityNeeds = () => {
         <div className="min-h-screen bg-background">
             <Navbar />
 
-            {/* Back Button */}
-            <div className="container mx-auto px-5 pt-20 max-w-5xl">
-                <BackButton />
-            </div>
-
-            {/* Hero Section */}
-            <div className="w-full relative py-16 sm:py-24 overflow-hidden bg-white border-b border-border/40">
+            {/* Hero Section — navbar offset built in via pt-20 */}
+            <div className="w-full relative pt-20 pb-8 overflow-hidden bg-white border-b border-border/40">
                 {/* Children background image */}
                 <div className="absolute inset-0 pointer-events-none overflow-hidden bg-rose-50/30">
                     <img
@@ -167,22 +162,24 @@ const CommunityNeeds = () => {
                 </div>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(244,63,94,0.03),transparent)]" />
                 <div className="container mx-auto px-5 max-w-5xl relative">
+                    {/* Back button sits right at the top */}
+                    <BackButton className="mb-4" />
                     <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 mb-6 animate-fade-in group cursor-default">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 mb-3 animate-fade-in group cursor-default">
                             <Sparkles className="w-3.5 h-3.5 text-primary group-hover:rotate-12 transition-transform" />
                             <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">Sahayogi Direct Impact</span>
                         </div>
-                        <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tighter text-foreground mb-4 animate-slide-up leading-[1.1]">
+                        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tighter text-foreground mb-3 animate-slide-up leading-[1.1]">
                             Community <span className="gemini-gradient">Needs</span>
                         </h1>
-                        <p className="text-base sm:text-lg text-muted-foreground leading-relaxed animate-slide-up animation-delay-100 font-medium">
-                            Verified, <span className="italic font-serif text-primary/80">high-impact</span> requests from families and groups in need across Nepal. Every contribution here makes a direct difference.
+                        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed animate-slide-up animation-delay-100 font-medium max-w-lg">
+                            Verified, <span className="italic font-serif text-primary/80">high-impact</span> requests from families and groups in need across Nepal.
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div className="container mx-auto px-5 py-12 max-w-5xl">
+            <div className="container mx-auto px-5 py-6 max-w-5xl">
                 {loading ? (
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[1, 2, 3, 4, 5, 6].map(i => (
