@@ -69,6 +69,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initAuth();
   }, []);
 
+  /* ─── safeJson: parse JSON safely, never throw on empty body ─────────── */
+  const safeJson = async (res: Response): Promise<any> => {
+    const text = await res.text();
+    if (!text || text.trim() === '') {
+      return { error: `Server returned an empty response (status ${res.status})` };
+    }
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { error: `Server returned invalid JSON: ${text.slice(0, 100)}` };
+    }
+  };
+
   /* ─── signUp ─────────────────────────────────────────────────────────── */
   const signUp = async (
     email: string,
@@ -81,12 +94,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, name }),
       });
-      const data = await res.json();
-      if (!res.ok) return { error: { message: data.error } };
+      const data = await safeJson(res);
+      if (!res.ok) return { error: { message: data.error || 'Signup failed' } };
 
       sessionStorage.setItem('sahayogi_token', data.token);
 
-      // Always validate via /auth/me - never trust the signup payload alone
       const me = await fetchMe(data.token);
       if (me) {
         setUser(me);
@@ -95,7 +107,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       return { error: null };
     } catch (err: any) {
-      return { error: { message: err.message } };
+      return { error: { message: err.message || 'Could not connect to server. Is the backend running?' } };
     }
   };
 
@@ -107,12 +119,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-      const data = await res.json();
-      if (!res.ok) return { error: { message: data.error } };
+      const data = await safeJson(res);
+      if (!res.ok) return { error: { message: data.error || 'Login failed' } };
 
       sessionStorage.setItem('sahayogi_token', data.token);
 
-      // Always validate via /auth/me
       const me = await fetchMe(data.token);
       if (me) {
         setUser(me);
@@ -121,7 +132,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       return { error: null };
     } catch (err: any) {
-      return { error: { message: err.message } };
+      return { error: { message: err.message || 'Could not connect to server. Is the backend running?' } };
     }
   };
 
