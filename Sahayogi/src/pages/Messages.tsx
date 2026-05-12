@@ -203,7 +203,7 @@ export default function Messages() {
         </div>
 
         {/* ── Main layout ── */}
-        <div className="flex gap-0 sm:gap-4 h-[calc(100vh-200px)] max-h-[780px]">
+        <div className="flex gap-0 sm:gap-4 h-[calc(100vh-160px)] max-h-[780px]">
 
           {/* ════ CONVERSATIONS PANEL ════ */}
           <div

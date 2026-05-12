@@ -134,8 +134,8 @@ const CreatePost = () => {
             
             <StoryHeader />
             
-            <div className="px-8 sm:px-12 pt-14 pb-10 text-center relative z-10">
-              <h2 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight mb-4 animate-slide-up font-serif italic">
+            <div className="px-6 sm:px-10 pt-6 pb-6 text-center relative z-10">
+              <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight mb-2 animate-slide-up font-serif italic">
                   Where every story finds a home. जहाँ प्रत्येक कथाले स्थान पाउँछ।
               </h2>
               <p className="text-stone-500 text-base sm:text-lg font-medium max-w-lg mx-auto leading-relaxed animate-slide-up animation-delay-200 italic">
@@ -143,7 +143,7 @@ const CreatePost = () => {
               </p>
             </div>
 
-            <div className="px-8 sm:px-16 pb-16 space-y-12">
+            <div className="px-6 sm:px-10 pb-8 space-y-6">
               {/* Type Selection Section */}
               <div className="animate-slide-up animation-delay-400">
                 <label className="block text-[11px] font-bold text-stone-400 uppercase tracking-[0.2em] mb-6 text-center">

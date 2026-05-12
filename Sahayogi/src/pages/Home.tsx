@@ -133,7 +133,7 @@ const Home = () => {
       {/* ─── FEATURED URGENT CAUSES ───────────────────────────── */}
       <section
         ref={causesSection.ref as React.RefObject<HTMLElement>}
-        className="py-16 md:py-24 band-light grain-overlay"
+        className="py-10 md:py-16 band-light grain-overlay"
       >
         <div className="container mx-auto px-4 max-w-5xl">
           {/* Section header */}
@@ -213,7 +213,7 @@ const Home = () => {
       {/* ─── CATEGORY SHOWCASE ────────────────────────────────── */}
       <section
         ref={catSection.ref as React.RefObject<HTMLElement>}
-        className="py-16 md:py-24 bg-background grain-overlay"
+        className="py-10 md:py-16 bg-background grain-overlay"
       >
         <div className="container mx-auto px-4 max-w-5xl">
           <div className={`mb-6 transition-all duration-700 ${catSection.inView ? 'animate-slide-up' : 'opacity-0 translate-y-8'}`}>
@@ -247,7 +247,7 @@ const Home = () => {
       <div className="band-divider" />
 
       {/* ─── IMPACT COUNTERS ──────────────────────────────────── */}
-      <section className="py-16 md:py-24 bg-primary text-white relative overflow-hidden grain-overlay">
+      <section className="py-10 md:py-16 bg-primary text-white relative overflow-hidden grain-overlay">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.08),transparent)] pointer-events-none" />
         <div className="container mx-auto px-4 max-w-5xl relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
@@ -269,7 +269,7 @@ const Home = () => {
       <section
         id="how-it-works"
         ref={stepsSection.ref as React.RefObject<HTMLElement>}
-        className="py-16 md:py-24 band-muted relative grain-overlay"
+        className="py-10 md:py-16 band-muted relative grain-overlay"
       >
         <div className="container mx-auto px-4 max-w-5xl relative z-10">
           <div className={`mb-8 text-center transition-all duration-700 ${stepsSection.inView ? 'animate-slide-up' : 'opacity-0 translate-y-8'}`}>
@@ -304,7 +304,7 @@ const Home = () => {
           </div>
 
           {/* Suggested actions row (density filler) */}
-          <div className="mt-10 pt-8 border-t border-border/60">
+          <div className="mt-6 pt-6 border-t border-border/60">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-4 text-center">Get involved today</p>
             <div className="grid sm:grid-cols-3 gap-3">
               {[
@@ -365,7 +365,7 @@ const Home = () => {
             </div>
 
             {/* Inner: Translucent panel for depth */}
-            <div className="relative z-10 py-16 md:py-24 px-6 md:px-12 rounded-[1.5rem] bg-black/40 border border-white/10 text-center">
+            <div className="relative z-10 py-10 md:py-16 px-6 md:px-12 rounded-[1.5rem] bg-black/40 border border-white/10 text-center">
               {/* Eyebrow */}
               <span className="inline-block text-[10px] font-bold text-white/50 uppercase tracking-[0.2em] mb-3">
                 A community-led platform for Nepal

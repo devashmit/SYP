@@ -178,7 +178,7 @@ const AdminDashboard = () => {
     return (
         <AdminLayout>
             {/* Header */}
-            <div className="flex items-center justify-between mb-12">
+            <div className="flex items-center justify-between mb-6">
                 <div className="animate-fade-in">
                     <h1 className="text-5xl font-black text-foreground tracking-tighter uppercase">
                         System Overview
@@ -195,7 +195,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 {[
                     { label: 'Total Users', value: users.length, icon: Users, color: 'text-primary', bg: 'bg-primary/5', border: 'border-primary/10' },
                     { label: 'Live Posts', value: allPosts.filter(p => p.status === 'available').length, icon: FileText, color: 'text-emerald-600', bg: 'bg-emerald-50/50', border: 'border-emerald-100' },
