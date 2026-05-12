@@ -115,7 +115,7 @@ const CreatePost = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#faf9f6] relative overflow-hidden py-16 sm:py-24 px-4 font-sans selection:bg-rose-100 selection:text-rose-900">
+    <div className="min-h-screen bg-[#faf9f6] relative overflow-hidden pt-20 pb-12 px-4 font-sans selection:bg-rose-100 selection:text-rose-900">
       <Navbar />
 
       {/* Dynamic Background Ambiance */}
@@ -125,7 +125,7 @@ const CreatePost = () => {
         <div className="absolute top-[30%] right-[10%] w-[30%] h-[30%] bg-rose-50/40 blur-[100px] rounded-full animate-blob animation-delay-4000" />
       </div>
 
-      <div className="max-w-3xl mx-auto relative z-10 animate-fade-in-up mt-12">
+      <div className="max-w-3xl mx-auto relative z-10 animate-fade-in-up mt-4">
         {/* Main Card with Premium Depth */}
         <div className="bg-white rounded-[3rem] border border-stone-100 shadow-[0_32px_80px_-16px_rgba(45,35,30,0.06)] overflow-hidden transition-all duration-700 hover:shadow-[0_48px_96px_-24px_rgba(45,35,30,0.08)]">
           <div className="relative">

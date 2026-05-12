@@ -11,7 +11,7 @@ const AppShell = () => {
         We use pt-24 (6rem) for mobile and pt-28 (7rem) for md+ to give the navbar room to breathe. 
         Note this padding happens BEFORE the page content.
       */}
-            <main className="flex-1 pt-24 md:pt-28 flex flex-col">
+            <main className="flex-1 pt-20 flex flex-col">
                 <Outlet />
             </main>
             <Footer />

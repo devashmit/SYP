@@ -108,9 +108,8 @@ const Browse = () => {
   return (
     <div className="min-h-screen bg-background selection:bg-primary/20 selection:text-primary">
       <Navbar />
-
       {/* Hero Header */}
-      <div className="w-full relative min-h-[176px] h-auto overflow-hidden mandala-bg grain-overlay">
+      <div className="w-full relative min-h-[140px] h-auto overflow-hidden mandala-bg grain-overlay mt-16">
         <div className="vignette-top" />
         <img
           src="/images/hero/boudhanath-stupa-in-kathmandu-nepal.webp"

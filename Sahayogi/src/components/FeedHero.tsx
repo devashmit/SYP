@@ -7,7 +7,7 @@ interface FeedHeroProps {
 
 const FeedHero = ({ username }: FeedHeroProps) => {
     return (
-        <div className="w-full relative pt-24 pb-8 sm:pt-32 sm:pb-12 lg:min-h-[380px] flex items-center overflow-hidden transition-all duration-500">
+        <div className="w-full relative pt-20 pb-6 sm:pt-24 sm:pb-8 lg:min-h-[320px] flex items-center overflow-hidden transition-all duration-500">
             {/* Background Base */}
             <div className="absolute inset-0 bg-primary/5" />
 

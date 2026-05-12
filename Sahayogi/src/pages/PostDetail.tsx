@@ -124,7 +124,7 @@ export default function PostDetail() {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="container mx-auto px-4 pt-28 pb-8">
+        <div className="container mx-auto px-4 pt-20 pb-8">
           <div className="max-w-3xl mx-auto space-y-4">
             <div className="h-8 skeleton-shimmer rounded-xl w-1/3" />
             <div className="aspect-video skeleton-shimmer rounded-2xl" />
@@ -140,7 +140,7 @@ export default function PostDetail() {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="container mx-auto px-4 pt-28 pb-8 text-center">
+        <div className="container mx-auto px-4 pt-20 pb-8 text-center">
           <div className="w-20 h-20 mx-auto rounded-full bg-muted/30 flex items-center justify-center mb-6">
             <Search className="w-10 h-10 text-muted-foreground/30" />
           </div>
@@ -160,7 +160,7 @@ export default function PostDetail() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container mx-auto px-4 pt-28 pb-8">
+      <main className="container mx-auto px-4 pt-20 pb-8">
         <BackButton className="mb-6" />
 
         <div className="max-w-3xl mx-auto space-y-6">

@@ -169,7 +169,7 @@ export default function Messages() {
     <div className="min-h-screen" style={{ background: '#F7F5F4' }}>
       <Navbar />
 
-      <div className="pt-24 pb-6 px-0 sm:px-4 max-w-5xl mx-auto">
+      <div className="pt-20 pb-6 px-0 sm:px-4 max-w-5xl mx-auto">
 
         {/* ── Page header (hidden when chat open on mobile) ── */}
         <div className={`px-4 sm:px-0 mb-4 ${showChat ? 'hidden lg:block' : 'block'}`}>

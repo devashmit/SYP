@@ -86,25 +86,25 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-5 left-1/2 -translate-x-1/2 z-[100] w-[94%] max-w-[1280px] transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${
+      className={`fixed top-3 left-1/2 -translate-x-1/2 z-[100] w-[96%] max-w-[1280px] transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${
         scrolled
-          ? 'bg-white/92 backdrop-blur-2xl shadow-[0_8px_40px_rgba(0,0,0,0.08)] border-border/50'
-          : 'bg-white/75 backdrop-blur-xl border-border/30'
-      } border rounded-2xl px-5 py-3 flex items-center justify-between`}
+          ? 'bg-white/95 backdrop-blur-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] border-border/50'
+          : 'bg-white/80 backdrop-blur-xl border-border/30'
+      } border rounded-2xl px-4 py-2 flex items-center justify-between`}
     >
       {/* Branding */}
       <Link
         to={isAuthenticated ? (isAdmin ? '/admin/dashboard' : '/feed') : '/'}
-        className="flex items-center gap-2.5 group"
+        className="flex items-center gap-2 group"
       >
         <div className="relative shrink-0">
           <img
             src={sahayogiLogo}
             alt="Sahayogi"
-            className="h-14 w-auto object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-[0_0_12px_rgba(var(--primary-rgb),0.15)]"
+            className="h-9 w-auto object-contain group-hover:scale-105 transition-transform duration-300"
           />
         </div>
-        <span className="font-extrabold text-2xl tracking-tighter gradient-text drop-shadow-sm hidden sm:block">
+        <span className="font-extrabold text-lg tracking-tighter gradient-text hidden sm:block">
           Sahayogi
         </span>
       </Link>

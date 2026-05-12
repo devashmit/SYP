@@ -102,7 +102,7 @@ const Dashboard = () => {
         <div className="min-h-screen bg-background pb-16">
             <Navbar />
 
-            <div className="container mx-auto px-4 pt-24 pb-8 max-w-5xl">
+            <div className="container mx-auto px-4 pt-20 pb-8 max-w-5xl">
                 {/* Page Header */}
                 <div className="mb-6 pt-4">
                     <div className="flex items-center gap-2 mb-1">

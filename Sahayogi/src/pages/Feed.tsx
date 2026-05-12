@@ -121,10 +121,8 @@ const Feed = () => {
     return (
         <div className="min-h-screen bg-[#fcfcfd]">
             <Navbar />
-
             <FeedHero username={user?.username} />
-
-            <div className="container mx-auto px-4 py-8 max-w-5xl">
+            <div className="container mx-auto px-4 py-6 max-w-5xl">
                 <div className="grid lg:grid-cols-[1fr_280px] gap-8">
 
                     <main className="space-y-6 min-w-0">
