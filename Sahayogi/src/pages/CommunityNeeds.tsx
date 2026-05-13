@@ -149,77 +149,75 @@ const CommunityNeeds = () => {
         <div className="min-h-screen bg-background">
             <Navbar />
 
-            {/* Hero Section — navbar offset built in via pt-20 */}
-            <div className="w-full relative pt-20 pb-8 overflow-hidden bg-white border-b border-border/40">
-                {/* Children background image */}
+            {/* Hero Section */}
+            <div className="w-full relative pt-16 pb-6 overflow-hidden bg-white border-b border-border/40">
+                {/* Children background image — cover so it fills the space */}
                 <div className="absolute inset-0 pointer-events-none overflow-hidden bg-rose-50/30">
                     <img
                         src={childrenImg}
                         alt=""
-                        className="w-full h-full object-contain object-center opacity-30 mix-blend-multiply animate-[slow-zoom_35s_infinite_alternate]"
+                        className="w-full h-full object-cover object-center opacity-25 mix-blend-multiply"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-[#fcfcfd]" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-white/50 to-white/80" />
                 </div>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(244,63,94,0.03),transparent)]" />
                 <div className="container mx-auto px-5 max-w-5xl relative">
-                    {/* Back button sits right at the top */}
-                    <BackButton className="mb-4" />
+                    <BackButton className="mb-3" />
                     <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 mb-3 animate-fade-in group cursor-default">
-                            <Sparkles className="w-3.5 h-3.5 text-primary group-hover:rotate-12 transition-transform" />
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 mb-2">
+                            <Sparkles className="w-3 h-3 text-primary" />
                             <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">Sahayogi Direct Impact</span>
                         </div>
-                        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tighter text-foreground mb-3 animate-slide-up leading-[1.1]">
+                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-foreground mb-2 leading-tight">
                             Community <span className="gemini-gradient">Needs</span>
                         </h1>
-                        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed animate-slide-up animation-delay-100 font-medium max-w-lg">
-                            Verified, <span className="italic font-serif text-primary/80">high-impact</span> requests from families and groups in need across Nepal.
+                        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-medium max-w-sm">
+                            Verified, <span className="italic font-serif text-primary/80">high-impact</span> requests from families across Nepal.
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div className="container mx-auto px-5 py-6 max-w-5xl">
+            <div className="container mx-auto px-5 py-4 max-w-5xl">
                 {loading ? (
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {[1, 2, 3, 4, 5, 6].map(i => (
-                            <div key={i} className="h-80 rounded-[2rem] bg-white border border-border/40 animate-pulse shadow-sm" />
+                            <div key={i} className="h-72 rounded-[2rem] bg-white border border-border/40 animate-pulse shadow-sm" />
                         ))}
                     </div>
                 ) : posts.length === 0 ? (
-                    <div className="py-24 text-center bg-white rounded-[2rem] border border-dashed border-border/80">
-                        <div className="w-20 h-20 mx-auto rounded-full bg-rose-50 flex items-center justify-center mb-6">
-                            <Heart className="w-10 h-10 text-rose-200" />
+                    <div className="py-16 text-center bg-white rounded-[2rem] border border-dashed border-border/80">
+                        <div className="w-16 h-16 mx-auto rounded-full bg-rose-50 flex items-center justify-center mb-4">
+                            <Heart className="w-8 h-8 text-rose-200" />
                         </div>
-                        <h3 className="text-xl font-bold text-foreground mb-2">No active needs found</h3>
-                        <p className="text-muted-foreground text-sm max-w-[280px] mx-auto mb-8">
-                            This is actually great news! It means all current needs are being addressed.
+                        <h3 className="text-lg font-bold text-foreground mb-2">No active needs found</h3>
+                        <p className="text-muted-foreground text-sm max-w-[260px] mx-auto mb-6">
+                            All current needs are being addressed.
                         </p>
                         <Link to="/">
-                            <Button variant="outline" className="rounded-2xl h-11 px-8 font-bold">
+                            <Button variant="outline" className="rounded-2xl h-10 px-6 font-bold">
                                 Browse main feed
                             </Button>
                         </Link>
                     </div>
                 ) : (
                     <>
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-rose-50 rounded-2xl">
-                                    <Flame className="w-5 h-5 text-rose-500" />
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                            <div className="flex items-center gap-2.5">
+                                <div className="p-2 bg-rose-50 rounded-xl">
+                                    <Flame className="w-4 h-4 text-rose-500" />
                                 </div>
                                 <div>
                                     <h2 className="text-sm font-bold text-foreground">Active Interventions</h2>
                                     <p className="text-[11px] text-muted-foreground">{posts.length} critical causes require support</p>
                                 </div>
                             </div>
-                            <Badge variant="outline" className="rounded-xl px-4 py-1.5 border-emerald-100 bg-emerald-50 text-emerald-600 font-bold text-[10px] flex gap-2 items-center">
+                            <Badge variant="outline" className="rounded-xl px-3 py-1 border-emerald-100 bg-emerald-50 text-emerald-600 font-bold text-[10px] flex gap-1.5 items-center">
                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                 Live Feed Enabled
                             </Badge>
                         </div>
 
-                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             {posts.map((post, i) => (
                                 <NeedCard key={post.id} post={post} index={i} />
                             ))}
